@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.1 (2019-12-10)
+
+### 🛠 Bug fixes
+* Fix issue when registering a contract with methods/events having the same name and different signatures
+
+
 ## 1.0.0 (2019-11-07)
 
 This is the first stable release of Orchestrate.
