@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.2 (2019-12-18)
+
+### 🛠 Bug fixes
+* Fix issue when registering a contract with no methods and/or no events
+
+
 ## 1.0.1 (2019-12-10)
 
 ### 🛠 Bug fixes
