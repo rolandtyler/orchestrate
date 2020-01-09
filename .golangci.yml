@@ -36,6 +36,7 @@ linters-settings:
       - experimental
     disabled-checks:
       - wrapperFunc
+      - whyNoLint
 
 linters:
   enable:
