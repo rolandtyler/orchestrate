@@ -2,13 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## v1.2.1 (2019-20-13)
+## v1.2.2 (2020-01-09)
+
+### 🛠 Bug fixes
+
+* Fix incorrect filtering on "name" argument on the GetTags method of the Contract Registry
+
+## v1.2.1 (2019-12-13)
 
 ### 🛠 Bug fixes
 
 * Upgrade retry policy when getting `NotFoundError` on JSON-RPC request. In particular it allows the transaction listener to effectively handle Infura endpoint that have sync discrepancies.
 
-## v1.2.0 (2019-20-13)
+## v1.2.0 (2019-12-13)
 
 ### 🆕 Features
 
