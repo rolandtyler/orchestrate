@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## v2.2.1 (Pending)
 ### 🛠 Bug fixes
 * HashiCorp client token renewal 
+* Tenant wildcard support to access private keys stored at Secret Storage
 
 ## v2.2.0 (2020-07-15)
 
