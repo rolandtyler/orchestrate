@@ -63,12 +63,12 @@ func idempotencyKeyMiddleware(next http.Handler) http.Handler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.SendTransactionRequest{params=types.TransactionParams} true "Contract transaction request"
+// @Param request body types.SendTransactionRequest{params=types.TransactionParams{}} true "Contract transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created contract transaction request"
-// @Failure 400 {string} error "Invalid request"
-// @Failure 409 {string} error "Already existing transaction"
-// @Failure 422 {string} error "Unprocessable parameters were sent"
-// @Failure 500 {string} error "Internal server error"
+// @Failure 400 {object} httputil.ErrorResponse "Invalid request"
+// @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
+// @Failure 422 {object} httputil.ErrorResponse "Unprocessable parameters were sent"
+// @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /transactions/send [post]
 func (c *TransactionsController) send(rw http.ResponseWriter, request *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
@@ -80,7 +80,7 @@ func (c *TransactionsController) send(rw http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	if err := txRequest.Params.PrivateTransactionParams.Validate(); err != nil {
+	if err := txRequest.Params.Validate(); err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -105,12 +105,12 @@ func (c *TransactionsController) send(rw http.ResponseWriter, request *http.Requ
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.DeployContractRequest{params=types.DeployContractParams} true "Deployment transaction request"
+// @Param request body types.DeployContractRequest{params=types.DeployContractParams{}} true "Deployment transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created deployment transaction request"
-// @Failure 400 {string} error "Invalid request"
-// @Failure 409 {string} error "Already existing transaction"
-// @Failure 422 {string} error "Unprocessable parameters were sent"
-// @Failure 500 {string} error "Internal server error"
+// @Failure 400 {object} httputil.ErrorResponse "Invalid request"
+// @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
+// @Failure 422 {object} httputil.ErrorResponse "Unprocessable parameters were sent"
+// @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /transactions/deploy-contract [post]
 func (c *TransactionsController) deployContract(rw http.ResponseWriter, request *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
@@ -122,7 +122,7 @@ func (c *TransactionsController) deployContract(rw http.ResponseWriter, request 
 		return
 	}
 
-	if err := txRequest.Params.PrivateTransactionParams.Validate(); err != nil {
+	if err := txRequest.Params.Validate(); err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -145,12 +145,12 @@ func (c *TransactionsController) deployContract(rw http.ResponseWriter, request 
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.RawTransactionRequest{params=types.RawTransactionParams} true "Raw transaction request"
+// @Param request body types.RawTransactionRequest{params=types.RawTransactionParams{}} true "Raw transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created raw transaction request"
-// @Failure 400 {string} error "Invalid request"
-// @Failure 409 {string} error "Already existing transaction"
-// @Failure 422 {string} error "Unprocessable parameters were sent"
-// @Failure 500 {string} error "Internal server error"
+// @Failure 400 {object} httputil.ErrorResponse "Invalid request"
+// @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
+// @Failure 422 {object} httputil.ErrorResponse "Unprocessable parameters were sent"
+// @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /transactions/send-raw [post]
 func (c *TransactionsController) sendRaw(rw http.ResponseWriter, request *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
@@ -181,12 +181,12 @@ func (c *TransactionsController) sendRaw(rw http.ResponseWriter, request *http.R
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.TransferRequest{params=types.TransferParams} true "Transfer transaction request"
+// @Param request body types.TransferRequest{params=types.TransferParams{}} true "Transfer transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created transfer transaction request"
-// @Failure 400 {string} error "Invalid request"
-// @Failure 409 {string} error "Already existing transaction"
-// @Failure 422 {string} error "Unprocessable parameters were sent"
-// @Failure 500 {string} error "Internal server error"
+// @Failure 400 {object} httputil.ErrorResponse "Invalid request"
+// @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
+// @Failure 422 {object} httputil.ErrorResponse "Unprocessable parameters were sent"
+// @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /transactions/transfer [post]
 func (c *TransactionsController) transfer(rw http.ResponseWriter, request *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
@@ -218,8 +218,8 @@ func (c *TransactionsController) transfer(rw http.ResponseWriter, request *http.
 // @Security JWTAuth
 // @Param uuid path string true "UUID of the transaction request"
 // @Success 200 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Transaction request found"
-// @Failure 404 {string} error "Transaction request not found"
-// @Failure 500 {string} error "Internal server error"
+// @Failure 404 {object} httputil.ErrorResponse "Transaction request not found"
+// @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /transactions/{uuid} [get]
 func (c *TransactionsController) getOne(rw http.ResponseWriter, request *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")

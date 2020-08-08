@@ -1,11 +1,17 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
+
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
+)
 
 type CreateJobRequest struct {
 	ScheduleUUID string            `json:"scheduleUUID" validate:"required,uuid4" example:"b4374e6f-b28a-4bad-b4fe-bda36eaf849c"`
 	ChainUUID    string            `json:"chainUUID" validate:"required,uuid4" example:"b4374e6f-b28a-4bad-b4fe-bda36eaf849c"`
-	Type         string            `json:"type" validate:"required,isJobType" example:"eth://ethereum/transaction"` //  @TODO validate Type is valid
+	Type         string            `json:"type" validate:"required,isJobType" example:"eth://ethereum/transaction"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	Annotations  *Annotations      `json:"annotations,omitempty"`
 	Transaction  *ETHTransaction   `json:"transaction" validate:"required"`
@@ -41,67 +47,115 @@ type ScheduleResponse struct {
 	CreatedAt time.Time      `json:"createdAt" example:"2020-07-09T12:35:42.115395Z"`
 }
 
-type BaseTransactionRequest struct {
-	ChainName string            `json:"chain" validate:"required" example:"myChain"`
-	Labels    map[string]string `json:"labels,omitempty"`
-}
-
 // go validator does not support mutually exclusive parameters for now
 // See more https://github.com/go-playground/validator/issues/608
 type TransactionParams struct {
-	Value           string        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	Gas             string        `json:"gas,omitempty" example:"21000"`
-	GasPrice        string        `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	From            string        `json:"from" validate:"required_without=OneTimeKey,omitempty,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
-	To              string        `json:"to" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
-	MethodSignature string        `json:"methodSignature" validate:"required,isValidMethodSig" example:"transfer(address,uint256)"`
-	Args            []interface{} `json:"args,omitempty"`
-	OneTimeKey      bool          `json:"oneTimeKey,omitempty" example:"true"`
-	Priority        string        `json:"priority,omitempty" validate:"isPriority" example:"very-high" `
-	PrivateTransactionParams
+	Value           string               `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	Gas             string               `json:"gas,omitempty" example:"21000"`
+	GasPrice        string               `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	From            string               `json:"from" validate:"required_without=OneTimeKey,omitempty,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
+	To              string               `json:"to" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
+	MethodSignature string               `json:"methodSignature" validate:"required,isValidMethodSig" example:"transfer(address,uint256)"`
+	Args            []interface{}        `json:"args,omitempty"`
+	OneTimeKey      bool                 `json:"oneTimeKey,omitempty" example:"true"`
+	Priority        string               `json:"priority,omitempty" validate:"isPriority" example:"very-high" `
+	Protocol        string               `json:"protocol,omitempty" validate:"omitempty,isPrivateTxManagerType" example:"Tessera"`
+	PrivateFrom     string               `json:"privateFrom,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivateFor      []string             `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivacyGroupID  string               `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+}
+
+func (params *TransactionParams) Validate() error {
+	if err := utils.GetValidator().Struct(params); err != nil {
+		return err
+	}
+
+	if params.OneTimeKey && params.From != "" {
+		return errors.InvalidParameterError("from account cannot be included when OneTimeKey is enabled")
+	}
+
+	if params.PrivateFrom != "" {
+		return validatePrivateTxParams(params.Protocol, params.PrivacyGroupID, params.PrivateFor)
+	}
+
+	return nil
 }
 
 type SendTransactionRequest struct {
-	BaseTransactionRequest
-	Params TransactionParams `json:"params" validate:"required"`
+	ChainName string            `json:"chain" validate:"required" example:"myChain"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	Params    TransactionParams `json:"params" validate:"required"`
 }
 
 type TransferParams struct {
-	Value    string `json:"value" validate:"required,isBig" example:"71500000 (wei)"`
-	Gas      string `json:"gas,omitempty" example:"21000"`
-	GasPrice string `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	From     string `json:"from" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
-	To       string `json:"to" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
-	Priority string `json:"priority,omitempty" validate:"isPriority" example:"very-high" `
+	Value    string               `json:"value" validate:"required,isBig" example:"71500000 (wei)"`
+	Gas      string               `json:"gas,omitempty" example:"21000"`
+	GasPrice string               `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	From     string               `json:"from" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
+	To       string               `json:"to" validate:"required,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
+	Priority string               `json:"priority,omitempty" validate:"isPriority" example:"very-high"`
 }
+
+func (params *TransferParams) Validate() error {
+	if err := utils.GetValidator().Struct(params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type TransferRequest struct {
-	BaseTransactionRequest
-	Params TransferParams `json:"params" validate:"required"`
+	ChainName string            `json:"chain" validate:"required" example:"myChain"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	Params    TransferParams    `json:"params" validate:"required"`
 }
 
 type RawTransactionParams struct {
-	Raw string `json:"raw" validate:"required,isHex" example:"0xfe378324abcde723..."`
+	Raw   string               `json:"raw" validate:"required,isHex" example:"0xfe378324abcde723..."`
 }
+
 type RawTransactionRequest struct {
-	BaseTransactionRequest
-	Params RawTransactionParams `json:"params" validate:"required"`
+	ChainName string               `json:"chain" validate:"required" example:"myChain"`
+	Labels    map[string]string    `json:"labels,omitempty"`
+	Params    RawTransactionParams `json:"params" validate:"required"`
 }
 
 type DeployContractParams struct {
-	Value        string        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	Gas          string        `json:"gas,omitempty" example:"21000"`
-	GasPrice     string        `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	From         string        `json:"from" validate:"required_without=OneTimeKey,omitempty,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
-	ContractName string        `json:"contractName" validate:"required" example:"MyContract"`
-	ContractTag  string        `json:"contractTag,omitempty" example:"v1.1.0"`
-	Args         []interface{} `json:"args,omitempty"`
-	OneTimeKey   bool          `json:"oneTimeKey,omitempty" example:"true"`
-	Priority     string        `json:"priority,omitempty" validate:"isPriority" example:"very-high" `
-	PrivateTransactionParams
+	Value          string               `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	Gas            string               `json:"gas,omitempty" example:"21000"`
+	GasPrice       string               `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	From           string               `json:"from" validate:"required_without=OneTimeKey,omitempty,eth_addr" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534"`
+	ContractName   string               `json:"contractName" validate:"required" example:"MyContract"`
+	ContractTag    string               `json:"contractTag,omitempty" example:"v1.1.0"`
+	Args           []interface{}        `json:"args,omitempty"`
+	OneTimeKey     bool                 `json:"oneTimeKey,omitempty" example:"true"`
+	Priority       string               `json:"priority,omitempty" validate:"isPriority" example:"very-high" `
+	Protocol       string               `json:"protocol,omitempty" validate:"omitempty,isPrivateTxManagerType" example:"Tessera"`
+	PrivateFrom    string               `json:"privateFrom,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivateFor     []string             `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivacyGroupID string               `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 }
+
+func (params *DeployContractParams) Validate() error {
+	if err := utils.GetValidator().Struct(params); err != nil {
+		return err
+	}
+
+	if params.OneTimeKey && params.From != "" {
+		return errors.InvalidParameterError("from account cannot be included when OneTimeKey is enabled")
+	}
+
+	if params.PrivateFrom != "" {
+		return validatePrivateTxParams(params.Protocol, params.PrivacyGroupID, params.PrivateFor)
+	}
+
+	return nil
+}
+
 type DeployContractRequest struct {
-	BaseTransactionRequest
-	Params DeployContractParams `json:"params" validate:"required"`
+	ChainName string               `json:"chain" validate:"required" example:"myChain"`
+	Labels    map[string]string    `json:"labels,omitempty"`
+	Params    DeployContractParams `json:"params" validate:"required"`
 }
 
 type TransactionResponse struct {

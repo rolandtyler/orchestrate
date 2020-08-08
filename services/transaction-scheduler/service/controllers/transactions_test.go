@@ -175,20 +175,6 @@ func (s *transactionsControllerTestSuite) TestTransactionsController_send() {
 		s.router.ServeHTTP(rw, httpRequest)
 		assert.Equal(t, http.StatusBadRequest, rw.Code)
 	})
-
-	s.T().Run("should fail with 400 if request fails with InvalidParameterError for private txs", func(t *testing.T) {
-		rw := httptest.NewRecorder()
-		txRequest := testutils.FakeSendTesseraRequest()
-		txRequest.Params.PrivateFrom = ""
-		requestBytes, _ := json.Marshal(txRequest)
-
-		httpRequest := httptest.NewRequest(http.MethodPost, urlPath,
-			bytes.NewReader(requestBytes)).
-			WithContext(s.ctx)
-
-		s.router.ServeHTTP(rw, httpRequest)
-		assert.Equal(t, http.StatusBadRequest, rw.Code)
-	})
 }
 
 func (s *transactionsControllerTestSuite) TestTransactionsController_deploy() {

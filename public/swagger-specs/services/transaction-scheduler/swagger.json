@@ -85,13 +85,13 @@
                     "400": {
                         "description": "Invalid filter in the request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -146,46 +146,25 @@
                     "200": {
                         "description": "Created Job",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.JobResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "$ref": "#/definitions/types.Annotations"
-                                        },
-                                        "logs": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/types.Log"
-                                            }
-                                        },
-                                        "transaction": {
-                                            "$ref": "#/definitions/types.ETHTransaction"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.JobResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -222,40 +201,19 @@
                     "200": {
                         "description": "Job found",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.JobResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "$ref": "#/definitions/types.Annotations"
-                                        },
-                                        "logs": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/types.Log"
-                                            }
-                                        },
-                                        "transaction": {
-                                            "$ref": "#/definitions/types.ETHTransaction"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.JobResponse"
                         }
                     },
                     "404": {
                         "description": "Job not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -310,52 +268,31 @@
                     "200": {
                         "description": "Job found",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.JobResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "annotations": {
-                                            "$ref": "#/definitions/types.Annotations"
-                                        },
-                                        "logs": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/types.Log"
-                                            }
-                                        },
-                                        "transaction": {
-                                            "$ref": "#/definitions/types.ETHTransaction"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.JobResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Job not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Job in invalid state for the given status update",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -393,13 +330,13 @@
                     "404": {
                         "description": "Job not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -429,29 +366,14 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/types.ScheduleResponse"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "jobs": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/definitions/types.JobResponse"
-                                                }
-                                            }
-                                        }
-                                    }
-                                ]
+                                "$ref": "#/definitions/types.ScheduleResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -512,19 +434,19 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -561,34 +483,19 @@
                     "200": {
                         "description": "Schedule found",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.ScheduleResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "jobs": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/types.JobResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.ScheduleResponse"
                         }
                     },
                     "404": {
                         "description": "Schedule not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -736,25 +643,25 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Already existing transaction",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -829,25 +736,25 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Already existing transaction",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -922,25 +829,25 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Already existing transaction",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -1015,25 +922,25 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Already existing transaction",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable parameters were sent",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -1091,13 +998,13 @@
                     "404": {
                         "description": "Transaction request not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/httputil.ErrorResponse"
                         }
                     }
                 }
@@ -1211,6 +1118,28 @@
                     "type": "string",
                     "example": "very-high"
                 },
+                "privacyGroupId": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "privateFor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=",
+                        "B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                    ]
+                },
+                "privateFrom": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "Tessera"
+                },
                 "value": {
                     "type": "string",
                     "example": "71500000 (wei)"
@@ -1220,9 +1149,20 @@
         "types.DeployContractRequest": {
             "type": "object",
             "required": [
+                "chain",
                 "params"
             ],
             "properties": {
+                "chain": {
+                    "type": "string",
+                    "example": "myChain"
+                },
+                "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "params": {
                     "type": "object",
                     "$ref": "#/definitions/types.DeployContractParams"
@@ -1231,10 +1171,6 @@
         },
         "types.ETHTransaction": {
             "type": "object",
-            "required": [
-                "data",
-                "raw"
-            ],
             "properties": {
                 "createdAt": {
                     "type": "string",
@@ -1337,6 +1273,28 @@
                     "type": "string",
                     "example": "1"
                 },
+                "privacyGroupId": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "privateFor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=",
+                        "B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                    ]
+                },
+                "privateFrom": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "Tessera"
+                },
                 "raw": {
                     "type": "string",
                     "example": "0xfe378324abcde723"
@@ -1432,9 +1390,20 @@
         "types.RawTransactionRequest": {
             "type": "object",
             "required": [
+                "chain",
                 "params"
             ],
             "properties": {
+                "chain": {
+                    "type": "string",
+                    "example": "myChain"
+                },
+                "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "params": {
                     "type": "object",
                     "$ref": "#/definitions/types.RawTransactionParams"
@@ -1467,9 +1436,20 @@
         "types.SendTransactionRequest": {
             "type": "object",
             "required": [
+                "chain",
                 "params"
             ],
             "properties": {
+                "chain": {
+                    "type": "string",
+                    "example": "myChain"
+                },
+                "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "params": {
                     "type": "object",
                     "$ref": "#/definitions/types.TransactionParams"
@@ -1512,6 +1492,28 @@
                 "priority": {
                     "type": "string",
                     "example": "very-high"
+                },
+                "privacyGroupId": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "privateFor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=",
+                        "B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                    ]
+                },
+                "privateFrom": {
+                    "type": "string",
+                    "example": "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="
+                },
+                "protocol": {
+                    "type": "string",
+                    "example": "Tessera"
                 },
                 "to": {
                     "type": "string",
@@ -1589,9 +1591,20 @@
         "types.TransferRequest": {
             "type": "object",
             "required": [
+                "chain",
                 "params"
             ],
             "properties": {
+                "chain": {
+                    "type": "string",
+                    "example": "myChain"
+                },
+                "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "params": {
                     "type": "object",
                     "$ref": "#/definitions/types.TransferParams"

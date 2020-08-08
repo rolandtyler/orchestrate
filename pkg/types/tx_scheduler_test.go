@@ -14,7 +14,7 @@ func TestTransactionParams_BasicSuccessful(t *testing.T) {
 		MethodSignature: "Constructor()",
 	}
 
-	err := utils.GetValidator().Struct(params)
+	err := params.Validate()
 	assert.NoError(t, err)
 }
 
