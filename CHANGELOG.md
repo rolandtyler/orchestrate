@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.2.1 (Pending)
+### 🛠 Bug fixes
+* HashiCorp client token renewal 
+
+## v2.2.0 (2020-07-15)
+
+No changes
+
 ## v2.2.0-rc1 (2020-07-01)
 
 ### 🆕 Features
