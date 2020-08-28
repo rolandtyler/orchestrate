@@ -70,7 +70,7 @@ func NewEnvelopeFromJobModel(job *models.Job, headers map[string]string) *tx.TxE
 		contextLabels = map[string]string{}
 	}
 	contextLabels["scheduleUUID"] = job.Schedule.UUID
-	contextLabels["priority"] = job.Annotations.Priority
+	contextLabels["priority"] = job.Annotations.GasPricePolicy.Priority
 
 	txEnvelope := &tx.TxEnvelope{
 		Msg: &tx.TxEnvelope_TxRequest{TxRequest: &tx.TxRequest{

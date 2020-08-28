@@ -30,7 +30,9 @@ func FormatSendTxRequest(txRequest *types.SendTransactionRequest, idempotencyKey
 		},
 		Annotations: &types.Annotations{
 			OneTimeKey: txRequest.Params.OneTimeKey,
-			Priority:   txRequest.Params.Priority,
+			GasPricePolicy: types.GasPriceParams{
+				Priority: txRequest.Params.GasPricePolicy.Priority,
+			},
 		},
 	}
 }
@@ -55,7 +57,9 @@ func FormatDeployContractRequest(txRequest *types.DeployContractRequest, idempot
 		},
 		Annotations: &types.Annotations{
 			OneTimeKey: txRequest.Params.OneTimeKey,
-			Priority:   txRequest.Params.Priority,
+			GasPricePolicy: types.GasPriceParams{
+				Priority: txRequest.Params.GasPricePolicy.Priority,
+			},
 		},
 	}
 }
@@ -84,7 +88,9 @@ func FormatSendTransferRequest(txRequest *types.TransferRequest, idempotencyKey 
 			Gas:      txRequest.Params.Gas,
 		},
 		Annotations: &types.Annotations{
-			Priority: txRequest.Params.Priority,
+			GasPricePolicy: types.GasPriceParams{
+				Priority: txRequest.Params.GasPricePolicy.Priority,
+			},
 		},
 	}
 }

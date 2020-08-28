@@ -610,7 +610,19 @@
                                     "type": "object",
                                     "properties": {
                                         "params": {
-                                            "$ref": "#/definitions/types.DeployContractParams"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/types.DeployContractParams"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "gasPricePolicy": {
+                                                            "$ref": "#/definitions/types.GasPriceParams"
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -703,7 +715,19 @@
                                     "type": "object",
                                     "properties": {
                                         "params": {
-                                            "$ref": "#/definitions/types.TransactionParams"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/types.TransactionParams"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "gasPricePolicy": {
+                                                            "$ref": "#/definitions/types.GasPriceParams"
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -889,7 +913,19 @@
                                     "type": "object",
                                     "properties": {
                                         "params": {
-                                            "$ref": "#/definitions/types.TransferParams"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/types.TransferParams"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "gasPricePolicy": {
+                                                            "$ref": "#/definitions/types.GasPriceParams"
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -1028,13 +1064,13 @@
                     "type": "string",
                     "example": "1 (mainnet)"
                 },
+                "gasPricePolicy": {
+                    "type": "object",
+                    "$ref": "#/definitions/types.GasPriceParams"
+                },
                 "oneTimeKey": {
                     "type": "boolean",
                     "example": true
-                },
-                "priority": {
-                    "type": "string",
-                    "example": "very-high"
                 }
             }
         },
@@ -1110,13 +1146,13 @@
                     "type": "string",
                     "example": "71500000 (wei)"
                 },
+                "gasPricePolicy": {
+                    "type": "object",
+                    "$ref": "#/definitions/types.GasPriceParams"
+                },
                 "oneTimeKey": {
                     "type": "boolean",
                     "example": true
-                },
-                "priority": {
-                    "type": "string",
-                    "example": "very-high"
                 },
                 "privacyGroupId": {
                     "type": "string",
@@ -1309,6 +1345,15 @@
                 }
             }
         },
+        "types.GasPriceParams": {
+            "type": "object",
+            "properties": {
+                "priority": {
+                    "type": "string",
+                    "example": "very-high"
+                }
+            }
+        },
         "types.JobResponse": {
             "type": "object",
             "properties": {
@@ -1481,6 +1526,10 @@
                     "type": "string",
                     "example": "71500000 (wei)"
                 },
+                "gasPricePolicy": {
+                    "type": "object",
+                    "$ref": "#/definitions/types.GasPriceParams"
+                },
                 "methodSignature": {
                     "type": "string",
                     "example": "transfer(address,uint256)"
@@ -1488,10 +1537,6 @@
                 "oneTimeKey": {
                     "type": "boolean",
                     "example": true
-                },
-                "priority": {
-                    "type": "string",
-                    "example": "very-high"
                 },
                 "privacyGroupId": {
                     "type": "string",
@@ -1573,6 +1618,10 @@
                 "gasPrice": {
                     "type": "string",
                     "example": "71500000 (wei)"
+                },
+                "gasPricePolicy": {
+                    "type": "object",
+                    "$ref": "#/definitions/types.GasPriceParams"
                 },
                 "priority": {
                     "type": "string",

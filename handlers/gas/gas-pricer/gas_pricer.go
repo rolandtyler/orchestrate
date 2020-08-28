@@ -36,7 +36,7 @@ func Pricer(p ethclient.GasPricer) engine.HandlerFunc {
 
 			// Set gas price
 			_ = txctx.Envelope.SetGasPrice(applyPriorityCoefficient(p, txctx.Envelope.ContextLabels["priority"]))
-			txctx.Logger.Debugf("gas-pricer: gas price set")
+			txctx.Logger.WithField("priority", txctx.Envelope.ContextLabels["priority"]).Debugf("gas-pricer: gas price set")
 		}
 
 		// Enrich logger

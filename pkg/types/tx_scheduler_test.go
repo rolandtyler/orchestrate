@@ -71,7 +71,9 @@ func TestDeployContractParams_FailWithoutFrom(t *testing.T) {
 func TestParams_Priority(t *testing.T) {
 	params := DeployContractParams{
 		ContractName: "SimpleContract",
-		Priority:     "invalidPriority",
+		GasPricePolicy: GasPriceParams{
+			Priority: "invalidPriority",
+		},
 	}
 
 	err := utils.GetValidator().Struct(params)

@@ -5,9 +5,9 @@ import (
 )
 
 type Annotations struct {
-	OneTimeKey bool                 `json:"oneTimeKey,omitempty" example:"true"`
-	ChainID    string               `json:"chainID,omitempty" example:"1 (mainnet)"`
-	Priority   string               `json:"priority,omitempty" validate:"isPriority" example:"very-high"`
+	OneTimeKey     bool           `json:"oneTimeKey,omitempty" example:"true"`
+	ChainID        string         `json:"chainID,omitempty" example:"1 (mainnet)"`
+	GasPricePolicy GasPriceParams `json:"gasPricePolicy,omitempty"`
 }
 
 func (a *Annotations) Validate() error {
@@ -20,4 +20,8 @@ func (a *Annotations) Validate() error {
 	}
 
 	return nil
+}
+
+type GasPriceParams struct {
+	Priority string `json:"priority,omitempty" validate:"isPriority" example:"very-high"`
 }

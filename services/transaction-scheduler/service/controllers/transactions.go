@@ -63,7 +63,7 @@ func idempotencyKeyMiddleware(next http.Handler) http.Handler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.SendTransactionRequest{params=types.TransactionParams{}} true "Contract transaction request"
+// @Param request body types.SendTransactionRequest{params=types.TransactionParams{gasPricePolicy=types.GasPriceParams}} true "Contract transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created contract transaction request"
 // @Failure 400 {object} httputil.ErrorResponse "Invalid request"
 // @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
@@ -105,7 +105,7 @@ func (c *TransactionsController) send(rw http.ResponseWriter, request *http.Requ
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.DeployContractRequest{params=types.DeployContractParams{}} true "Deployment transaction request"
+// @Param request body types.DeployContractRequest{params=types.DeployContractParams{gasPricePolicy=types.GasPriceParams}} true "Deployment transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created deployment transaction request"
 // @Failure 400 {object} httputil.ErrorResponse "Invalid request"
 // @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
@@ -181,7 +181,7 @@ func (c *TransactionsController) sendRaw(rw http.ResponseWriter, request *http.R
 // @Produce json
 // @Security ApiKeyAuth
 // @Security JWTAuth
-// @Param request body types.TransferRequest{params=types.TransferParams{}} true "Transfer transaction request"
+// @Param request body types.TransferRequest{params=types.TransferParams{gasPricePolicy=types.GasPriceParams}} true "Transfer transaction request"
 // @Success 202 {object} types.TransactionResponse{params=types.ETHTransactionParams,schedule=types.ScheduleResponse} "Created transfer transaction request"
 // @Failure 400 {object} httputil.ErrorResponse "Invalid request"
 // @Failure 409 {object} httputil.ErrorResponse "Already existing transaction"
