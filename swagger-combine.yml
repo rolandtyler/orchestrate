@@ -14,15 +14,11 @@ apis:
     tags:
       add:
         - "Chain Registry"
-  - url: 'public/swagger-specs/types/envelope-store/store.swagger.json'
+  - url: 'public/swagger-specs/services/envelope-store/proto/store.swagger.json'
     tags:
       rename:
         EnvelopeStore: "Envelope Store"
-  - url: 'public/swagger-specs/types/contract-registry/registry.swagger.json'
+  - url: 'public/swagger-specs/services/contract-registry/proto/registry.swagger.json'
     tags:
       rename:
         ContractRegistry: "Contract Registry"
-  - url: 'public/swagger-specs/types/transaction-scheduler/swagger.json'
-    tags:
-      add:
-        - "Transaction Scheduler"
