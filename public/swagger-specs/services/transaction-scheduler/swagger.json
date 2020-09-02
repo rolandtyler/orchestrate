@@ -1623,10 +1623,6 @@
                     "type": "object",
                     "$ref": "#/definitions/types.GasPriceParams"
                 },
-                "priority": {
-                    "type": "string",
-                    "example": "very-high"
-                },
                 "to": {
                     "type": "string",
                     "example": "0x1abae27a0cbfb02945720425d3b80c7e09728534"
