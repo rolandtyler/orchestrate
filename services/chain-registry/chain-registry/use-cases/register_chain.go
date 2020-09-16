@@ -5,11 +5,14 @@ import (
 
 	"github.com/containous/traefik/v2/pkg/log"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/chain-registry/utils"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/store"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/store/models"
 )
+
+const registerChainComponent = "use-cases.register-chain"
 
 type RegisterChain interface {
 	Execute(ctx context.Context, chain *models.Chain) error
@@ -35,8 +38,7 @@ func (uc *registerChain) Execute(ctx context.Context, chain *models.Chain) error
 	if chain.ListenerStartingBlock == nil {
 		head, err := utils.GetChainTip(ctx, uc.ethClient, chain.URLs)
 		if err != nil {
-			logger.WithError(err).Errorf("could not import chain head block. Default 0")
-			head = 0
+			return errors.FromError(err).ExtendComponent(registerChainComponent)
 		}
 
 		chain.ListenerStartingBlock = &head

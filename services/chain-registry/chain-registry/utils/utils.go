@@ -8,9 +8,9 @@ import (
 	"net/url"
 
 	"github.com/containous/traefik/v2/pkg/log"
+	"github.com/ethereum/go-ethereum/core/types"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient"
-	ethclientutils "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient/utils"
 )
 
 type apiError struct {
@@ -47,19 +47,14 @@ func WriteError(rw http.ResponseWriter, msg string, code int) {
 	http.Error(rw, string(data), code)
 }
 
-func GetChainTip(ctx context.Context, ec ethclient.ChainLedgerReader, urls []string) (uint64, error) {
-	var tip uint64
-
-	// All URLs must be valid and we return the head of the latest one
-	for _, uri := range urls {
-		head, err := ec.HeaderByNumber(ethclientutils.RetryNotFoundError(ctx, true), uri, nil)
-		if err != nil {
-			log.FromContext(ctx).WithError(err).Errorf("failed to fetch chain tip for URL %s", uri)
-			return 0, err
+func GetChainTip(ctx context.Context, ec ethclient.ChainLedgerReader, uris []string) (head uint64, err error) {
+	var header *types.Header
+	for _, uri := range uris {
+		header, err = ec.HeaderByNumber(ctx, uri, nil)
+		if err == nil {
+			return header.Number.Uint64(), nil
 		}
-
-		tip = head.Number.Uint64()
+		log.FromContext(ctx).WithError(err).Warnf("failed to fetch chain id for URL %s", uri)
 	}
-
-	return tip, nil
+	return
 }

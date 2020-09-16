@@ -5,14 +5,20 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/dgraph-io/ristretto"
+	"github.com/spf13/viper"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/app"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/auth"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/database/postgres"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient/rpc"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/http"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/http/config/dynamic"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/http/handler/proxy"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/http/middleware/ratelimit"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
 	usecases "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/chain-registry/use-cases"
 	ctrl "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/service/controllers"
 	chainctrl "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/service/controllers/chains"
@@ -95,11 +101,22 @@ func New(
 
 	// TODO: chain import should append after starting App not at app creation
 	// (or should be deprecated)
-	importChainUC := usecases.NewImportChain(dataAgents.Chain, ec)
+	b := func() backoff.BackOff {
+		cfg := utils.NewConfig(viper.GetViper())
+		cfg.Retry.MaxElapsedTime = 30 * time.Second
+		return utils.NewBackOff(cfg)
+	}
+
+	importChainUC := usecases.NewImportChain(dataAgents.Chain, rpc.NewClient(b, http.NewClient()))
 	for _, jsonChain := range cfg.EnvChains {
 		err = importChainUC.Execute(context.Background(), jsonChain)
 		if err != nil {
-			appli.Logger().WithError(err).Errorf("could not import chain")
+			if errors.IsAlreadyExistsError(err) {
+				appli.Logger().WithError(err).Warnf("skipping import (chain already exists)")
+			} else {
+				appli.Logger().WithError(err).Errorf("could not import chain")
+				return nil, err
+			}
 		}
 	}
 
