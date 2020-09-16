@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/containous/traefik/v2/pkg/log"
+	"github.com/ethereum/go-ethereum/core/types"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethereum/ethclient"
 )
@@ -94,16 +95,14 @@ func GetChainID(ctx context.Context, ec ethclient.ChainSyncReader, uris []string
 	return nil, errors.InvalidParameterError(errMessage)
 }
 
-func GetChainTip(ctx context.Context, ec ethclient.ChainLedgerReader, uris []string) uint64 {
+func GetChainTip(ctx context.Context, ec ethclient.ChainLedgerReader, uris []string) (head uint64, err error) {
+	var header *types.Header
 	for _, uri := range uris {
-		head, err := ec.HeaderByNumber(ctx, uri, nil)
-		if err != nil {
-			log.FromContext(ctx).WithError(err).Errorf("failed to fetch chain id for URL %s", uri)
-			continue
+		header, err = ec.HeaderByNumber(ctx, uri, nil)
+		if err == nil {
+			return header.Number.Uint64(), nil
 		}
-
-		return head.Number.Uint64()
+		log.FromContext(ctx).WithError(err).Warnf("failed to fetch chain id for URL %s", uri)
 	}
-
-	return 0
+	return
 }
