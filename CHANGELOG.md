@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.4.0-rc3 (2020-10-09)
+
+### 🛠 Bug fixes
+* Fix a bug updating status of a jobs in NEVER_MINED 
+
 ## v2.4.0-rc2 (2020-10-05)
 
 ### 🛠 Bug fixes
