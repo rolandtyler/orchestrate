@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## v2.5.0-rc1 (unreleased)
+## v2.5.0-rc2 (unreleased)
+
+### 🛠 Bug fixes
+* Fix a bug with chain-registry cache on multi chain setups
+* Fix a bug with infinitive loop on job retries when chain is not reachable
+
+## v2.5.0-rc1 (2020-10-09)
 
 ### 🆕 Features
 * Enhance service health check endpoint (/ready) to validate external dependencies 
@@ -15,6 +21,12 @@ All notable changes to this project will be documented in this file.
     * `REDIS_USERNAME`: Redis AUTH username
     * `REDIS_PASSWORD`: Redis AUTH password
     * `REDIS_DATABASE`: Redis CLI database number
+
+## v2.4.0-rc4 (unreleased)
+
+### 🛠 Bug fixes
+* Fix a bug with chain-registry cache on multi chain setups
+* Fix a bug with infinitive loop on job retries when chain is not reachable
 
 ## v2.4.0-rc3 (2020-10-09)
 
