@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.4.0-rc4 (unreleased)
+
+### 🛠 Bug fixes
+* Fix a bug with chain-registry cache on multi chain setups
+* Fix a bug with infinitive loop on job retries when chain is not reachable
+
 ## v2.4.0-rc3 (2020-10-09)
 
 ### 🛠 Bug fixes

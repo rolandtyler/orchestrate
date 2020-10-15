@@ -187,7 +187,7 @@ services:
       SECRET_PKEY: ${SECRET_PKEY-}
       SECRET_STORE: ${SECRET_STORE-hashicorp}
     volumes:
-      - vault-token:/vault/token
+      - vault-token:/vault/token:ro
       - ./build/bin/orchestrate:/bin/main
     depends_on:
       - tx-signer-init
@@ -221,11 +221,12 @@ services:
       ARTIFACTS_PATH: "/artifacts"
       CUCUMBER_FORMAT: "cucumber"
       CUCUMBER_CONCURRENCY: ${CUCUMBER_CONCURRENCY-}
+      CUCUMBER_TAGS: ${CUCUMBER_TAGS-}
       TEST_GLOBAL_DATA: ${TEST_GLOBAL_DATA-}
       AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY-}
-#      CUCUMBER_STEPS_TIMEOUT: ${CUCUMBER_STEPS_TIMEOUT-500}
-# Uncomment CUCUMBER_TAGS if only run features and scenarios with @public-tx or @account tags ("," = OR, "&&" = AND, "~" = NOT)
-#      CUCUMBER_TAGS: "@besu"
+      CUCUMBER_STEPS_TIMEOUT: ${CUCUMBER_STEPS_TIMEOUT-20s}
+    # Uncomment CUCUMBER_TAGS if only run features and scenarios with @public-tx or @account tags ("," = OR, "&&" = AND, "~" = NOT)
+    #      CUCUMBER_TAGS: "@besu"
     restart: "no"
     command: e2e
     volumes:
