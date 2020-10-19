@@ -2,16 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## v2.5.0-rc2 (unreleased)
-
-### 🛠 Bug fixes
-* Fix a bug with chain-registry cache on multi chain setups
-* Fix a bug with infinitive loop on job retries when chain is not reachable
-
-## v2.5.0-rc1 (2020-10-09)
+## v2.5.0 (2020-10-19)
 
 ### 🆕 Features
-* Enhance service health check endpoint (/ready) to validate external dependencies 
+
+* Enhance service health check endpoint (/ready) to validate external and internal dependencies
 * Add support for TLS connection to Redis. Add flags and environment variables:
     * `REDIS_TLS_CERT`: PEM certificate to connect to the database
     * `REDIS_TLS_KEY`: PEM key to connect to the database
@@ -22,45 +17,31 @@ All notable changes to this project will be documented in this file.
     * `REDIS_PASSWORD`: Redis AUTH password
     * `REDIS_DATABASE`: Redis CLI database number
 
-## v2.4.0-rc4 (unreleased)
-
-### 🛠 Bug fixes
-* Fix a bug with chain-registry cache on multi chain setups
-* Fix a bug with infinitive loop on job retries when chain is not reachable
-
-## v2.4.0-rc3 (2020-10-09)
-
-### 🛠 Bug fixes
-* Fix a bug updating status of a jobs in NEVER_MINED 
-
-## v2.4.0-rc2 (2020-10-05)
-
-### 🛠 Bug fixes
-* Fix a bug with quorum's private transaction signature where the payload is sign with v=37,38 instead of 27,28
-* Fix a bug with besu's gas estimation for private transaction on Besu>=1.5.4
-* Fix a bug with infinitive loop on job retries when gas increment is zero 
-* Fix a bug with missing envelope message ID on `account-generated` topic
-
-## v2.4.0-rc1 (2020-09-29)
+## v2.4.0 (2020-10-19)
 
 ### 🆕 Features
+
 * Add the new Transaction Sentry service.
     * Users can now add a `retryPolicy` inside the `gasPricePolicy` settings when publishing transactions by specifying an `interval`, `increment`, and a `limit`.
-    * The Transaction Sentry will watch this transaction until it's mined and after each `interval`, will resend the transaction with a gasPrice increased by `increment`(%), capped by `limit` (%). 
+    * The Transaction Sentry will watch this transaction until it's mined and after each `interval`, will resend the transaction with a gasPrice increased by `increment`(%), capped by `limit` (%).
 * Add a Caching mechanism that can be enabled to cache every identical request going from Orchestrate to the Ethereum node. TTL can be configured using the environment variable `CHAIN_REGISTRY_CACHE_TTL`
     * This feature is especially useful for cases where:
         * where multiple chains (belonging to the same tenant or not) calls the same Ethereum node.
         * and using a node with low capabilities or behind a rate limiter (Infura/Kaleido)  
 
 ### ⚠ BREAKING CHANGES
+
 * Schedule level was removed from transaction api responses
 * Use transaction UUID instead of job UUID as ID for tx-decoded messages
 
 ### 🛠 Bug fixes
-* Fix a bug when registering an overloaded & rate-limited chain with a configuration starting block to "latest", the synchronization could start from block 0. 
-* Fix a bug where the process was not failing when DB migration failed
-* Improve retry policy on Eth Clients, it's now failing quicker in some cases and more accurately 
 
+* Fix a bug when registering an overloaded & rate-limited chain with a configuration starting block to "latest", the synchronization could start from block 0.
+* Fix a bug where the process was not failing when DB migration failed
+* Improve retry policy on Eth Clients, it's now failing quicker in some cases and more accurately
+* Fix a bug with quorum's private transaction signature where the payload is sign with v=37,38 instead of 27,28
+* Fix a bug with besu's gas estimation for private transaction on Besu>=1.5.4
+* Fix a bug with missing envelope message ID on `account-generated` topic
 
 ## v2.3.2 (2020-09-22)
 
