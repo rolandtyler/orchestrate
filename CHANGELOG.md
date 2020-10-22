@@ -1,6 +1,9 @@
-# CHANGELOG
+# Codefi Orchestrate Release Notes
 
-All notable changes to this project will be documented in this file.
+## v2.4.1 (2020-11-09)
+
+### 🛠 Bug fixes
+* Single tx-recover message on failed transactions using retry policy
 
 ## v2.4.0 (2020-10-19)
 
