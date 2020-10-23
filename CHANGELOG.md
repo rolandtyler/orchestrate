@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.5.1 (2020-10-23)
+
+### 🆕 Features
+
+* Add the `CHAIN_REGISTRY_MAXIDLECONNSPERHOST` to control the maximum of open HTTP connections to a chain proxied 
+
+### 🛠 Bug fixes
+
+* Ability to cache gzip HTTP responses in the chain-registry
+
 ## v2.5.0 (2020-10-19)
 
 ### 🆕 Features
