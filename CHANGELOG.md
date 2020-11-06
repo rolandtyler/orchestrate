@@ -1,6 +1,10 @@
-# CHANGELOG
+# Codefi Orchestrate Release Notes
 
-All notable changes to this project will be documented in this file.
+## v2.5.2 (Unreleased)
+
+### 🛠 Bug fixes
+
+* Allow usage of OS certificate bundle on Redis TLS connections
 
 ## v2.5.1 (2020-10-23)
 
