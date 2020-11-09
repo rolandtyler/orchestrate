@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
+	"time"
 
 	traefikdynamic "github.com/containous/traefik/v2/pkg/config/dynamic"
 	"github.com/prometheus/client_golang/prometheus"
@@ -118,6 +119,9 @@ func TestReloadConfiguration(t *testing.T) {
 	}
 
 	_ = httpCollector.Switch(dynCfg)
+
+	// Increase waiting time to complete dynamic cfg switch
+	time.Sleep(time.Second * 2)
 
 	httpCollector.RequestsCounter().
 		With("tenant_id", "test-tenant", "entrypoint", "ep-foo", "protocol", "http", "service", "dashboard@provider1", "method", http.MethodGet, "code", strconv.Itoa(http.StatusOK)).

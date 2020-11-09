@@ -1,10 +1,12 @@
 # Codefi Orchestrate Release Notes
 
-## v2.5.2 (Unreleased)
+## v2.5.2 (2020-11-09)
 
 ### 🛠 Bug fixes
 
+* Single tx-recover message on failed transactions using retry policy
 * Allow usage of OS certificate bundle on Redis TLS connections
+* Fix a bug on transaction recovering for invalid nonce
 
 ## v2.5.1 (2020-10-23)
 
@@ -30,6 +32,11 @@
     * `REDIS_USERNAME`: Redis AUTH username
     * `REDIS_PASSWORD`: Redis AUTH password
     * `REDIS_DATABASE`: Redis CLI database number
+
+## v2.4.1 (2020-11-09)
+
+### 🛠 Bug fixes
+* Single tx-recover message on failed transactions using retry policy
 
 ## v2.4.0 (2020-10-19)
 

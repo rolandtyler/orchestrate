@@ -1,4 +1,5 @@
 @public-tx
+@raw-tx
 Feature: Send raw transfer transaction
   As an external developer
   I want to process a raw transaction using transaction scheduler API
@@ -16,11 +17,11 @@ Feature: Send raw transfer transaction
 
   Scenario: Send raw transaction
     Given I sign the following transactions
-      | alias  | ID              | Value              | Gas   | To           | privateKey                                   | ChainUUID     | Headers.Authorization    |
-      | rawTx1 | {{random.uuid}} | 100000000000000000 | 21000 | {{account1}} | {{global.nodes.besu_1.fundedPrivateKeys[1]}} | {{besu.UUID}} | Bearer {{tenant1.token}} |
+      | alias | ID              | Value              | Gas   | To           | privateKey                                   | ChainUUID     | Headers.Authorization    |
+      | rawTx | {{random.uuid}} | 100000000000000000 | 21000 | {{account1}} | {{global.nodes.besu_1.fundedPrivateKeys[1]}} | {{besu.UUID}} | Bearer {{tenant1.token}} |
     Then I track the following envelopes
-      | ID            |
-      | {{rawTx1.ID}} |
+      | ID           |
+      | {{rawTx.ID}} |
     Given I set the headers
       | Key           | Value                    |
       | Authorization | Bearer {{tenant1.token}} |
@@ -29,17 +30,17 @@ Feature: Send raw transfer transaction
 {
     "chain": "besu-{{scenarioID}}",
     "params": {
-      "raw": "{{rawTx1.Raw}}"
+      "raw": "{{rawTx.Raw}}"
     },
     "labels": {
     	"scenario.id": "{{scenarioID}}",
-    	"id": "{{rawTx1.ID}}"
+    	"id": "{{rawTx.ID}}"
     }
 }
       """
     Then the response code should be 202
     Then I register the following response fields
-      | alias   | path                  |
+      | alias   | path         |
       | jobUUID | jobs[0].uuid |
     Then Envelopes should be in topic "tx.sender"
     Then Envelopes should be in topic "tx.decoded"
@@ -51,19 +52,60 @@ Feature: Send raw transfer transaction
     And Response should have the following fields
       | status | logs[0].status | logs[1].status | logs[2].status | logs[3].status |
       | MINED  | CREATED        | STARTED        | PENDING        | MINED          |
-    When I send "POST" request to "{{global.chain-registry}}/{{besu.UUID}}" with json:
+
+  Scenario: Send same raw transaction twice
+    Given I sign the following transactions
+      | alias | ID              | Value              | Gas   | To           | privateKey                                   | ChainUUID     | Headers.Authorization    |
+      | rawTx | {{random.uuid}} | 100000000000000000 | 21000 | {{account1}} | {{global.nodes.besu_1.fundedPrivateKeys[1]}} | {{besu.UUID}} | Bearer {{tenant1.token}} |
+    Then I track the following envelopes
+      | ID           |
+      | {{rawTx.ID}} |
+    Given I set the headers
+      | Key           | Value                    |
+      | Authorization | Bearer {{tenant1.token}} |
+    When I send "POST" request to "{{global.tx-scheduler}}/transactions/send-raw" with json:
+  """
+{
+    "chain": "besu-{{scenarioID}}",
+    "params": {
+      "raw": "{{rawTx.Raw}}"
+    },
+    "labels": {
+    	"scenario.id": "{{scenarioID}}",
+    	"id": "{{rawTx.ID}}"
+    }
+}
       """
-      {
-        "jsonrpc": "2.0",
-        "method": "eth_getBalance",
-        "params": [
-          "{{account1}}",
-          "latest"
-        ],
-        "id": 1
-      }
-      """
+    Then the response code should be 202
+    Then I register the following response fields
+      | alias   | path         |
+      | jobUUID | jobs[0].uuid |
+    Then Envelopes should be in topic "tx.decoded"
+    When I send "GET" request to "{{global.tx-scheduler}}/jobs/{{jobUUID}}"
     Then the response code should be 200
     And Response should have the following fields
-      | result            |
-      | 0x16345785d8a0000 |
+      | status | logs[0].status | logs[1].status | logs[2].status | logs[3].status |
+      | MINED  | CREATED        | STARTED        | PENDING        | MINED          |
+    When I send "POST" request to "{{global.tx-scheduler}}/transactions/send-raw" with json:
+  """
+{
+    "chain": "besu-{{scenarioID}}",
+    "params": {
+      "raw": "{{rawTx.Raw}}"
+    },
+    "labels": {
+    	"scenario.id": "{{scenarioID}}",
+    	"id": "{{rawTx.ID}}"
+    }
+}
+      """
+    Then the response code should be 202
+    Then I register the following response fields
+      | alias   | path         |
+      | jobUUID | jobs[0].uuid |
+    Then Envelopes should be in topic "tx.recover"
+    When I send "GET" request to "{{global.tx-scheduler}}/jobs/{{jobUUID}}"
+    Then the response code should be 200
+    And Response should have the following fields
+      | status | logs[0].status | logs[1].status | logs[3].status |
+      | FAILED | CREATED        | STARTED        | FAILED         |
