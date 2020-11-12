@@ -242,6 +242,7 @@ services:
       ARTIFACTS_PATH: "/artifacts"
       STRESS_CONCURRENCY: "50"
       STRESS_ITERATIONS: "5000"
+      STRESS_TIMEOUT: "10m"
       TEST_GLOBAL_DATA: ${TEST_GLOBAL_DATA-}
     restart: "no"
     command: stress
@@ -254,7 +255,7 @@ services:
     environment:
       <<: *default-variables
       AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY-}
-    command: utils generate-jwt --tenant=${TENANT_ID-_}
+    command: utils generate-jwt --tenant=${TENANT_ID-_} --expiration=${EXPIRATION-24h}
     restart: "no"
 
 volumes:
