@@ -1,12 +1,17 @@
 # Codefi Orchestrate Release Notes
 
+## v2.5.3 (Unreleased)
+
+### 🛠 Bug fixes
+* Fix chain registration issue with Kaleido/Infura when multitenancy is enabled
+
 ## v2.5.2 (2020-11-09)
 
 ### 🛠 Bug fixes
 
-* Single tx-recover message on failed transactions using retry policy
+* Remove duplicated tx-recover messages on transaction retries failing on sending
 * Allow usage of OS certificate bundle on Redis TLS connections
-* Fix a bug on transaction recovering for invalid nonce
+* Fix a bug on transaction recovering for invalid nonce 
 
 ## v2.5.1 (2020-10-23)
 
@@ -33,10 +38,16 @@
     * `REDIS_PASSWORD`: Redis AUTH password
     * `REDIS_DATABASE`: Redis CLI database number
 
+## v2.4.2 (Unreleased)
+
+### 🛠 Bug fixes
+
+* Fix chain registration issue with Kaleido/Infura when multitenancy is enabled
+
 ## v2.4.1 (2020-11-09)
 
 ### 🛠 Bug fixes
-* Single tx-recover message on failed transactions using retry policy
+* Remove duplicated tx-recover messages on transaction retries failing on sending
 
 ## v2.4.0 (2020-10-19)
 
