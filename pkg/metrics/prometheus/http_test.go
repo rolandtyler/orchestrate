@@ -1,6 +1,4 @@
 // +build unit
-// +build !race
-// +build !integration
 
 package prometheus
 
@@ -121,7 +119,7 @@ func TestReloadConfiguration(t *testing.T) {
 	_ = httpCollector.Switch(dynCfg)
 
 	// Increase waiting time to complete dynamic cfg switch
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 1)
 
 	httpCollector.RequestsCounter().
 		With("tenant_id", "test-tenant", "entrypoint", "ep-foo", "protocol", "http", "service", "dashboard@provider1", "method", http.MethodGet, "code", strconv.Itoa(http.StatusOK)).
@@ -139,12 +137,16 @@ func TestReloadConfiguration(t *testing.T) {
 		With("tenant_id", "test-tenant", "entrypoint", "ep-foo", "service", "proxy@provider1", "url", "http://unknown.com").
 		Set(1)
 
+	time.Sleep(time.Second * 1)
+
 	// #3 Gather a 1st time: should retrieve metrics
 	families, err = registry.Gather()
 	require.NoError(t, err, "#3 Gathering metrics should not error")
 	require.Len(t, families, 2, "#3 Count of metrics families should be correct")
 	assert.Len(t, families[0].GetMetric(), 2, "#3 Count of requests metrics should be correct")
 	assert.Len(t, families[1].GetMetric(), 2, "#3 Count of server up metrics should be correct")
+
+	time.Sleep(time.Second * 1)
 
 	// #3 Gather a 2nd time: should retrieve metrics that are in dynamic config
 	families, err = registry.Gather()

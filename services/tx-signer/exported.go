@@ -78,14 +78,15 @@ func registerHandlers() {
 	engine.Register(opentracing.GlobalHandler())
 	engine.Register(logger.Logger("info"))
 	engine.Register(sarama.Loader)
-	engine.Register(offset.Marker)
 	engine.Register(opentracing.GlobalHandler())
-	engine.Register(producer.GlobalHandler())
-	engine.Register(txupdater.GlobalHandler())
 	engine.Register(injector.GlobalHandler())
 
 	// Specific handlers for Signer worker
 	engine.Register(vault.GlobalHandler())
+
+	engine.RegisterWrapper(txupdater.GlobalHandler())
+	engine.RegisterWrapper(producer.GlobalHandler())
+	engine.RegisterWrapper(offset.Marker)
 }
 
 // Run starts application
