@@ -2,6 +2,9 @@
 
 ## v2.5.3 (Unreleased)
 
+### 🆕 Features
+* Append `X-Backend-Server` header to proxy responses  
+
 ### 🛠 Bug fixes
 * Fix chain registration issue with Kaleido/Infura when multitenancy is enabled
 * Retry on worker messages when connection errors occurred
