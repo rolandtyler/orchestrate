@@ -14,6 +14,7 @@ variables:
   GOPATH: ${CI_PROJECT_DIR}/.gocache
   ARTIFACT_DOWNLOAD_ATTEMPTS: 5
   RESTORE_CACHE_ATTEMPTS: 5
+  DOCKER_AUTH_CONFIG: ${DOCKER_AUTH_CONFIG}
 
 services:
   - docker:19.03-dind
@@ -55,12 +56,13 @@ services:
 
 .docker-compose-e2e: &docker-compose-e2e
   stage: e2e
+  image: docker:19.03
   before_script:
     - apk update
     - apk add make bash jq curl build-base
     - apk add --no-cache py3-pip python3
     - apk add --no-cache --virtual build-dependencies python3-dev libffi-dev openssl-dev gcc libc-dev
-    - pip3 install docker-compose==1.26.0
+    - pip3 install docker-compose==1.27.4
   after_script:
     - make down
   cache:
@@ -107,14 +109,6 @@ services:
   # Release static swagger doc for latest version on Gitlab pages
   image: node:12.16.2-stretch-slim
   before_script:
-    #    - |
-    #      if [ -z "$CI_COMMIT_TAG" ]; then
-    #        exit 1
-    #      elif [[ $CI_COMMIT_TAG == *"-rc"* ]]; then
-    #        DOC_VERSION="latest"
-    #      else
-    #        DOC_VERSION="stable"
-    #      fi
     - DOC_VERSION="latest"
     - npm install swagger-combine@1.1.2
     - npm install redoc-cli@0.9.10
@@ -187,12 +181,7 @@ gobuild:
 
 test-e2e:
   <<: *docker-compose-e2e
-  rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: on_success
-      allow_failure: false
-    - if: $CI_COMMIT_TAG
-      when: never
+  <<: *rules
   script:
     - mv -f .env.ci .env
     - make up-ci
@@ -201,12 +190,7 @@ test-e2e:
 
 test-multitenancy-e2e:
   <<: *docker-compose-e2e
-  rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
-      when: on_success
-      allow_failure: false
-    - if: $CI_COMMIT_TAG
-      when: never
+  <<: *rules
   script:
     - mv -f .env.multitenancy .env
     - make up-ci
@@ -261,8 +245,6 @@ release-orchestrate:
   stage: release
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_KEY} ${DOCKER_REGISTRY}
-    - docker login -u ${DOCKER_REGISTRY_USER_2} -p ${DOCKER_REGISTRY_KEY_2} ${DOCKER_REGISTRY_2}
   script:
     - docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
     - docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} ${DOCKER_REGISTRY}/orchestrate:${CI_COMMIT_TAG}
@@ -271,8 +253,6 @@ release-orchestrate:
     - docker push ${DOCKER_REGISTRY_2}${DOCKER_REPOSITORY_2}/orchestrate:${CI_COMMIT_TAG}
   after_script:
     - docker logout $CI_REGISTRY
-    - docker logout ${DOCKER_REGISTRY}
-    - docker logout ${DOCKER_REGISTRY_2}
   only:
     refs:
       - tags
@@ -316,8 +296,6 @@ release-e2e:
   stage: release
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_KEY} ${DOCKER_REGISTRY}
-    - docker login -u ${DOCKER_REGISTRY_USER_2} -p ${DOCKER_REGISTRY_KEY_2} ${DOCKER_REGISTRY_2}
   script:
     - docker pull ${CI_REGISTRY_IMAGE}/e2e:${CI_COMMIT_SHORT_SHA}
     - docker tag ${CI_REGISTRY_IMAGE}/e2e:${CI_COMMIT_SHORT_SHA} ${DOCKER_REGISTRY}/e2e:${CI_COMMIT_TAG}
@@ -326,8 +304,6 @@ release-e2e:
     - docker push ${DOCKER_REGISTRY_2}${DOCKER_REPOSITORY_2}/orchestrate-e2e:${CI_COMMIT_TAG}
   after_script:
     - docker logout $CI_REGISTRY
-    - docker logout ${DOCKER_REGISTRY}
-    - docker logout ${DOCKER_REGISTRY_2}
   only:
     refs:
       - tags
