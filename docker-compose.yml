@@ -47,7 +47,7 @@ x-default-variables: &default-variables
   DB_TLS_CA: ${DB_TLS_CA-}
 
 x-container-common: &container-common
-  image: golang:1.14
+  image: golang:1.15
   restart: ${CONTAINER_RESTART-on-failure}
   entrypoint: /bin/main
   tty: true

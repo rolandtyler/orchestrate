@@ -1,5 +1,10 @@
 # Codefi Orchestrate Release Notes
 
+## v2.5.4 (Unreleased)
+
+### 🛠 Bug fixes
+* Capture and log chain-registry proxy errors
+
 ## v2.5.3 (2020-11-26)
 
 ### 🆕 Features
