@@ -16,6 +16,7 @@
 * Exit service right away after Kakfa errors and 404 HTTP errors
 * Fix typo on group-decoded (KAFKA_GROUP_DECODER renamed to KAFKA_GROUP_DECODED)
 * Fix Kafka group value settings 
+* Fix `RECOVERING` job status transitions 
 
 ## v2.5.4 (2020-12-08)
 

@@ -24,6 +24,8 @@ func Marker(txctx *engine.TxContext) {
 		if !ok {
 			txctx.Logger.Fatalf("marker: expected a sarama.ConsumerMessage")
 		}
+
+		txctx.Logger.Debug("marker: commit offset")
 		s.MarkMessage(&msg.ConsumerMessage, "")
 		s.Commit()
 	}

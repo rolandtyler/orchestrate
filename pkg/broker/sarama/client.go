@@ -36,7 +36,7 @@ func NewSaramaConfig() (*sarama.Config, error) {
 		cfg.Version = sarama.V1_0_0_0
 	}
 
-	cfg.ClientID = "orchestrate"
+	cfg.ClientID = "sarama-orchestrate"
 	cfg.Producer.Return.Errors = true
 	cfg.Producer.Return.Successes = true
 	cfg.Consumer.Return.Errors = true
