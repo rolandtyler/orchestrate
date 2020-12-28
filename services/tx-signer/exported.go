@@ -67,7 +67,7 @@ func initComponents(ctx context.Context) {
 		// Initialize ConsumerGroup
 		func() {
 			// Set Kafka Group value
-			viper.Set(broker.KafkaGroupViperKey, "group-signer")
+			viper.Set(broker.KafkaGroupViperKey, viper.GetString(broker.SignerGroupViperKey))
 			broker.InitConsumerGroup(ctx)
 		},
 	)

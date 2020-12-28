@@ -25,5 +25,6 @@ func Marker(txctx *engine.TxContext) {
 			txctx.Logger.Fatalf("marker: expected a sarama.ConsumerMessage")
 		}
 		s.MarkMessage(&msg.ConsumerMessage, "")
+		s.Commit()
 	}
 }

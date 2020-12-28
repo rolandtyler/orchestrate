@@ -1,6 +1,23 @@
 # Codefi Orchestrate Release Notes
 
-## v2.5.4 (Unreleased)
+## v2.5.5 (Unreleased)
+
+### 🆕 Features
+* Add environment variables to control Sarama consumer group configuration, for more information see https://pkg.go.dev/github.com/Shopify/sarama#Config 
+    * `KAFKA_CONSUMER_GROUP_HEARTBEAT_INTERVAL`: The expected time between heartbeats to the consumer coordinator when using Kafka's group management facilities (default 3s)
+    * `KAFKA_CONSUMER_GROUP_REBALANCE_STRATEGY`: Strategy for allocating topic partitions to members (default: Range)
+    * `KAFKA_CONSUMER_GROUP_REBALANCE_TIMEOUT`: The maximum allowed time for each worker to join the group once a rebalance has begun (default 10s)
+    * `KAFKA_CONSUMER_GROUP_SESSION_TIMEOUT`: The timeout used to detect consumer failures when using Kafka's group management facility (default 3a)
+    * `KAFKA_CONSUMER_MAXPROCESSINGTIME`: The maximum amount of time the consumer expects a message takes to process for the user (default 250ms)
+    * `KAFKA_VERSION`: The version of Kafka that Sarama will assume it is running against (default: 1.0.0)
+
+### 🛠 Bug fixes
+* Manual kafka offset commit
+* Exit service right away after Kakfa errors and 404 HTTP errors
+* Fix typo on group-decoded (KAFKA_GROUP_DECODER renamed to KAFKA_GROUP_DECODED)
+* Fix Kafka group value settings 
+
+## v2.5.4 (2020-12-08)
 
 ### 🛠 Bug fixes
 * Capture and log chain-registry proxy errors

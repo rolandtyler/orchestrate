@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -325,27 +324,21 @@ func (sc *ScenarioContext) iRegisterTheFollowingChains(table *gherkin.PickleStep
 		}
 	}
 
+	ctx := context.Background()
 	for i, chain := range interfaceSlices {
 		token := utilsCols.Rows[i+1].Cells[1].Value
 
-		res, err := sc.ChainRegistry.RegisterChain(authutils.WithAuthorization(context.Background(), token), chain.(*models.Chain))
+		res, err := sc.ChainRegistry.RegisterChain(authutils.WithAuthorization(ctx, token), chain.(*models.Chain))
 		if err != nil {
 			return err
 		}
 		sc.TearDownFunc = append(sc.TearDownFunc, onTearDown(res.UUID, token))
 
-		// set aliases
-		sc.aliases.Set(res, sc.Pickle.Id, utilsCols.Rows[i+1].Cells[0].Value)
-
 		chainRegURL, _ := sc.aliases.Get(alias.GlobalAka, "chain-registry")
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", chainRegURL, res.UUID), nil)
-		if err != nil {
-			return err
-		}
-
+		proxyURL := fmt.Sprintf("%s/%s", chainRegURL, res.UUID)
 		err = backoff.RetryNotify(
 			func() error {
-				_, err2 := sc.httpClient.Do(req)
+				_, err2 := sc.ec.Network(ctx, proxyURL)
 				return err2
 			},
 			backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5),
@@ -359,6 +352,9 @@ func (sc *ScenarioContext) iRegisterTheFollowingChains(table *gherkin.PickleStep
 		if err != nil {
 			return err
 		}
+
+		// set aliases
+		sc.aliases.Set(res, sc.Pickle.Id, utilsCols.Rows[i+1].Cells[0].Value)
 	}
 
 	return nil
