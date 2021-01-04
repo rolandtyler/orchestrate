@@ -1,6 +1,6 @@
 # Codefi Orchestrate Release Notes
 
-## v2.5.5 (Unreleased)
+## v2.5.5 (2021-01-05)
 
 ### 🆕 Features
 * Add environment variables to control Sarama consumer group configuration, for more information see https://pkg.go.dev/github.com/Shopify/sarama#Config 
@@ -17,6 +17,7 @@
 * Fix typo on group-decoded (KAFKA_GROUP_DECODER renamed to KAFKA_GROUP_DECODED)
 * Fix Kafka group value settings 
 * Fix `RECOVERING` job status transitions 
+* Set default value of `KAFKA_CONSUMER_MAX_WAIT_TIME` to `250ms`
 
 ## v2.5.4 (2020-12-08)
 
