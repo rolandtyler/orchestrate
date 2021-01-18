@@ -14,7 +14,8 @@ ACCOUNT_GENERATOR=account-generator
 
 echo "Creating topics if not exist..."
 RETRY=10
-TOPICS=($TX_CRAFTER $TX_NONCE $TX_SIGNER $TX_SENDER $TX_DECODED $TX_RECOVER $ACCOUNT_GENERATED $ACCOUNT_GENERATOR)
+PARTITIONS=3
+TOPICS=($TX_CRAFTER $TX_SIGNER $TX_SENDER $TX_DECODED $TX_RECOVER $ACCOUNT_GENERATED $ACCOUNT_GENERATOR $TX_LISTENER)
 
 for NAME in ${TOPICS[@]}
 do
@@ -22,7 +23,7 @@ do
     n=10
     for i in $(seq 1 1 $RETRY)
     do
-	    docker-compose -f scripts/deps/docker-compose.yml exec kafka kafka-topics --create --partitions 1 --replication-factor 1 --if-not-exists --zookeeper zookeeper:32181 --topic topic-$NAME && break
+	    docker-compose -f scripts/deps/docker-compose.yml exec kafka kafka-topics --create --partitions $PARTITIONS --replication-factor 1 --if-not-exists --zookeeper zookeeper:32181 --topic topic-$NAME && break
         echo "
 =======================================================================
 Attempt $i/$RETRY (retry in 2 seconds) - could not create topic-$NAME

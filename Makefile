@@ -184,7 +184,7 @@ postgres:
 down-postgres:
 	@docker-compose -f scripts/deps/docker-compose.yml rm --force -s -v postgres-unit
 
-up: deps geth besu quorum bootstrap-deps orchestrate ## Start Orchestrate and deps
+up: deps geth besu quorum bootstrap-deps topics orchestrate ## Start Orchestrate and deps
 
 down: down-orchestrate down-quorum down-geth down-besu down-deps  ## Down Orchestrate and deps
 

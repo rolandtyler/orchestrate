@@ -2,9 +2,13 @@ package sarama
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/Shopify/sarama"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/hashicorp/go-multierror"
+	log "github.com/sirupsen/logrus"
 )
 
 type ConsumerDaemon struct {
@@ -38,10 +42,22 @@ func (d *ConsumerDaemon) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			err := d.group.Consume(ctx, d.topics, d.handler)
-			if err != nil {
-				return err
-			}
+			return backoff.RetryNotify(
+				func() error {
+					err := d.group.Consume(ctx, d.topics, d.handler)
+
+					// In this case, kafka rebalance was triggered and we want to retry
+					if err == nil && ctx.Err() == nil {
+						return fmt.Errorf("kafka rebalance was triggered")
+					}
+
+					return backoff.Permanent(err)
+				},
+				backoff.NewConstantBackOff(time.Millisecond*500),
+				func(err error, duration time.Duration) {
+					log.WithContext(ctx).WithError(err).Warnf("listener: consuming session exited, retrying in %s", duration.String())
+				},
+			)
 		}
 	}
 }
