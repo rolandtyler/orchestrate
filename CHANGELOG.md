@@ -1,6 +1,6 @@
 # Codefi Orchestrate Release Notes
 
-## v2.5.5 (Unreleased)
+## v2.5.6 (2021-01-25)
 ### 🛠 Bug fixes
 * Workers hanging after kafka trigger consumer rebalancing
 
