@@ -3,26 +3,25 @@ package assets
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/ethclient"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/log"
 	orchestrateclient "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/sdk/client"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/types/api"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/utils"
-	utils2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/tests/service/stress/utils"
+	utils2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/tests/utils"
 )
 
 var chainsCtxKey ctxKey = "chains"
 
 type Chain struct {
+	UUID            string
 	Name            string
 	ProxyURL        string
 	PrivNodeAddress []string
 }
 
-func RegisterNewChain(ctx context.Context, client orchestrateclient.OrchestrateClient, ec ethclient.Client,
+func RegisterNewChain(ctx context.Context, client orchestrateclient.OrchestrateClient, ec ethclient.ChainSyncReader,
 	proxyHost, chainName string, chainData *utils2.TestDataChain,
 ) (context.Context, error) {
 	logger := log.FromContext(ctx).WithField("name", chainName).WithField("urls", chainData.URLs)
@@ -33,30 +32,40 @@ func RegisterNewChain(ctx context.Context, client orchestrateclient.OrchestrateC
 		URLs: chainData.URLs,
 	})
 	if err != nil {
-		errMsg := "failed to register chain"
 		logger.WithError(err).Error("failed to register chain")
-		return nil, fmt.Errorf(errMsg)
+		return nil, err
 	}
 
-	chainProxyURL := utils.GetProxyURL(proxyHost, c.UUID)
-	err = backoff.RetryNotify(
-		func() error {
-			_, err2 := ec.Network(ctx, chainProxyURL)
-			return err2
-		},
-		backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5),
-		func(err error, duration time.Duration) {
-			logger.WithField("chain", c.UUID).WithError(err).Debug("chain proxy is still not ready")
-		},
-	)
+	err = utils2.WaitForProxy(ctx, proxyHost, c.UUID, ec)
 	if err != nil {
+		logger.WithError(err).Error("failed to wait for chain proxy")
 		return nil, err
 	}
 
 	logger.WithField("chain", c.UUID).Info("new chain has been registered")
 	return contextWithChains(ctx, append(ContextChains(ctx),
-		Chain{ProxyURL: chainProxyURL, Name: chainName, PrivNodeAddress: chainData.PrivateAddress}),
+		Chain{
+			UUID:            c.UUID,
+			ProxyURL:        utils.GetProxyURL(proxyHost, c.UUID),
+			Name:            chainName,
+			PrivNodeAddress: chainData.PrivateAddress,
+		}),
 	), nil
+}
+
+func DeregisterChain(ctx context.Context, client orchestrateclient.OrchestrateClient, chain *Chain) error {
+	logger := log.FromContext(ctx).WithField("uuid", chain.UUID).WithField("name", chain.Name)
+	logger.WithContext(ctx).Debug("deleting chain")
+
+	err := client.DeleteChain(ctx, chain.UUID)
+	if err != nil {
+		errMsg := "failed to delete chain"
+		logger.WithError(err).Error(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
+	logger.Info("chain has been deleted successfully")
+	return nil
 }
 
 func contextWithChains(ctx context.Context, chains []Chain) context.Context {
