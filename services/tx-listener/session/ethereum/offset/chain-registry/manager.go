@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/containous/traefik/v2/pkg/log"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	registry "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/client"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/tx-listener/dynamic"
@@ -33,6 +34,11 @@ func (m *Manager) GetLastBlockNumber(ctx context.Context, chain *dynamic.Chain) 
 }
 
 func (m *Manager) SetLastBlockNumber(ctx context.Context, chain *dynamic.Chain, blockNumber uint64) error {
+	if chain.Listener.CurrentBlock == blockNumber {
+		log.FromContext(ctx).WithField("block_number", blockNumber).
+			Warn("ignored set last block number. Chain is already at same block")
+		return nil
+	}
 	err := m.registry.UpdateBlockPosition(ctx, chain.UUID, blockNumber)
 	if err != nil {
 		return errors.FromError(err).ExtendComponent(component)
