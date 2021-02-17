@@ -53,6 +53,6 @@ func Dispatcher(reg *chanregistry.ChanRegistry, keyOfs ...KeyOfFunc) engine.Hand
 			return
 		}
 
-		txctx.Logger.Warnf("dispatcher - untracked envelope not dispatched")
+		txctx.Logger.Warn("dispatcher - untracked envelope not dispatched")
 	}
 }

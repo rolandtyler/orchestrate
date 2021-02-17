@@ -252,8 +252,6 @@ func (cfg *Config) PGOptions() (*pg.Options, error) {
 		Database:           cfg.Database,
 		PoolSize:           cfg.PoolSize,
 		ApplicationName:    cfg.ApplicationName,
-		IdleTimeout:        time.Second * 30,
-		IdleCheckFrequency: time.Second * 10,
 	}
 
 	dialer, err := NewTLSDialer(cfg)

@@ -140,10 +140,6 @@ func (agent *PGJob) Search(ctx context.Context, filters *entities.JobFilters, te
 		query = query.Where("job.chain_uuid IS NOT NULL", filters.ChainUUID)
 	}
 
-	if filters.Status != "" {
-		query = query.Where("job.status = ?", filters.Status)
-	}
-
 	if filters.ParentJobUUID != "" {
 		query = query.
 			Where("job.uuid = ?", filters.ParentJobUUID).
@@ -151,7 +147,7 @@ func (agent *PGJob) Search(ctx context.Context, filters *entities.JobFilters, te
 	}
 
 	if filters.OnlyParents {
-		query = query.Where("job.is_parent is true")
+		query = query.Where("job.internal_data->'parentJobUUID' is null")
 	}
 
 	if filters.UpdatedAfter.Second() > 0 {

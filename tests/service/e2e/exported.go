@@ -8,7 +8,6 @@ import (
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/encoding/json"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/ethclient/rpc"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/types/api"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/types/entities"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/tests/service/e2e/cucumber/alias"
 	utils3 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/tests/utils"
 
@@ -223,7 +222,7 @@ func initTestChains(ctx context.Context, testData *utils3.TestData) (map[string]
 		if node.PrivateTxManager.URL != "" {
 			req.PrivateTxManager = &api.PrivateTxManagerRequest{
 				URL:  node.PrivateTxManager.URL,
-				Type: entities.TesseraChainType,
+				Type: utils.TesseraChainType,
 			}
 		}
 		reqs[fmt.Sprintf("quorum%d", idx)] = req
