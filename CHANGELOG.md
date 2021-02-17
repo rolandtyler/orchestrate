@@ -1,10 +1,11 @@
 # Orchestrate Release Notes
 
-## v21.1.1 (Unreleased)
+## v21.1.1 (2021-02-17)
 
 ### 🛠 Bug fixes
 * Hanging issue during synchronization from block 0 
 * Tx-listener crashes on heavy load over API
+* Fail to send raw transaction with not empty data field
 
 ## v21.1.0 (2021-01-25)
 
