@@ -195,7 +195,7 @@ postgres:
 down-postgres:
 	@docker-compose -f scripts/deps/docker-compose.yml rm --force -s -v postgres-unit
 
-up: deps-persistent quorum geth besu deps-kafka hashicorp-vault-import-secrets bootstrap-deps topics orchestrate ## Start Orchestrate and deps
+up: deps-persistent quorum geth besu deps-kafka hashicorp-vault-import-secrets bootstrap-deps orchestrate ## Start Orchestrate and deps
 
 dev: deps orchestrate ## Start Orchestrate and light deps
 

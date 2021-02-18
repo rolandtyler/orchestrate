@@ -1,6 +1,6 @@
 # Orchestrate Release Notes
 
-## v21.1.1 (2021-02-17)
+## v21.1.1 (2021-02-19)
 
 ### 🛠 Bug fixes
 * Hanging issue during synchronization from block 0 

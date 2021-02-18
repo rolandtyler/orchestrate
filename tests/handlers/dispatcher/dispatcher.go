@@ -34,6 +34,7 @@ func Dispatcher(reg *chanregistry.ChanRegistry, keyOfs ...KeyOfFunc) engine.Hand
 			if err == nil {
 				txctx.Logger.WithFields(log.Fields{"key": key}).Debug("dispatcher - external tx envelope dispatched")
 			}
+
 			return
 		}
 

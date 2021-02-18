@@ -315,18 +315,18 @@ func (s *jobTestSuite) TestPGJob_ConnectionErr() {
 	job := testutils.FakeJobModel(0)
 	s.T().Run("should return PostgresConnectionError if insert fails", func(t *testing.T) {
 		err := s.agents.Job().Insert(ctx, job)
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	s.T().Run("should return PostgresConnectionError if update fails", func(t *testing.T) {
 		job.ID = 1
 		err := s.agents.Job().Update(ctx, job)
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	s.T().Run("should return PostgresConnectionError if update fails", func(t *testing.T) {
 		_, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{job.Schedule.TenantID})
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	// We bring it back up

@@ -246,12 +246,12 @@ type Config struct {
 
 func (cfg *Config) PGOptions() (*pg.Options, error) {
 	opt := &pg.Options{
-		Addr:               fmt.Sprintf("%v:%v", cfg.Host, cfg.Port),
-		User:               cfg.User,
-		Password:           cfg.Password,
-		Database:           cfg.Database,
-		PoolSize:           cfg.PoolSize,
-		ApplicationName:    cfg.ApplicationName,
+		Addr:            fmt.Sprintf("%v:%v", cfg.Host, cfg.Port),
+		User:            cfg.User,
+		Password:        cfg.Password,
+		Database:        cfg.Database,
+		PoolSize:        cfg.PoolSize,
+		ApplicationName: cfg.ApplicationName,
 	}
 
 	dialer, err := NewTLSDialer(cfg)
