@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/database"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/utils"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/utils/envelope"
 	usecases "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/services/api/business/use-cases"
@@ -67,28 +68,27 @@ func (uc *startJobUseCase) Execute(ctx context.Context, jobUUID string, tenants 
 		Status: utils.StatusStarted,
 	}
 
-	dbtx, err := uc.db.Begin()
+	err = database.ExecuteInDBTx(uc.db, func(dbtx database.Tx) error {
+		if err = dbtx.(store.Tx).Log().Insert(ctx, jobLog); err != nil {
+			return errors.FromError(err).ExtendComponent(startJobComponent)
+		}
+
+		partition, offset, err := envelope.SendJobMessage(jobEntity, uc.kafkaProducer, uc.topicsCfg.Sender)
+		if err != nil {
+			logger.WithError(err).Error("failed to send job message")
+			return errors.FromError(err).ExtendComponent(startJobComponent)
+		}
+
+		logger.WithField("partition", partition).WithField("offset", offset).Info("job started successfully")
+		return nil
+	})
+	
 	if err != nil {
-		return errors.FromError(err).ExtendComponent(startJobComponent)
-	}
-
-	if err = dbtx.(store.Tx).Log().Insert(ctx, jobLog); err != nil {
-		return errors.FromError(err).ExtendComponent(startJobComponent)
-	}
-
-	partition, offset, err := envelope.SendJobMessage(jobEntity, uc.kafkaProducer, uc.topicsCfg.Sender)
-	if err != nil {
-		logger.WithError(err).Error("failed to send job message")
-		_ = dbtx.Rollback()
-		return errors.FromError(err).ExtendComponent(startJobComponent)
-	}
-
-	if err := dbtx.Commit(); err != nil {
+		logger.WithError(err).Info("failed to start job")
 		return errors.FromError(err).ExtendComponent(startJobComponent)
 	}
 
 	uc.addMetrics(jobLog, jobModel.Logs[len(jobModel.Logs)-1], jobModel.ChainUUID)
-	logger.WithField("partition", partition).WithField("offset", offset).Info("job started successfully")
 	return nil
 }
 

@@ -42,10 +42,12 @@ func TestStartJob_Execute(t *testing.T) {
 
 	mockDB := mocks.NewMockDB(ctrl)
 	mockDB.EXPECT().Begin().Return(mockDBTX, nil).AnyTimes()
+	mockDBTX.EXPECT().Close().Return(nil).AnyTimes()
 
 	mockDB.EXPECT().Job().Return(mockJobDA).AnyTimes()
 	mockDB.EXPECT().Job().Return(mockJobDA).AnyTimes()
 	mockDBTX.EXPECT().Log().Return(mockLogDA).AnyTimes()
+	mockDBTX.EXPECT().Job().Return(mockJobDA).AnyTimes()
 
 	usecase := NewStartJobUseCase(mockDB, mockKafkaProducer, sarama.NewKafkaTopicConfig(viper.GetViper()), mockMetrics)
 
@@ -135,6 +137,7 @@ func TestStartJob_Execute(t *testing.T) {
 
 		mockJobDA.EXPECT().FindOneByUUID(gomock.Any(), job.UUID, tenants).Return(job, nil)
 		mockLogDA.EXPECT().Insert(gomock.Any(), gomock.Any()).Return(expectedErr)
+		mockDBTX.EXPECT().Rollback().Return(nil)
 
 		err := usecase.Execute(ctx, job.UUID, tenants)
 		assert.Equal(t, errors.FromError(expectedErr).ExtendComponent(startJobComponent), err)
