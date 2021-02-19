@@ -7,6 +7,9 @@
 * Tx-listener crashes on heavy load over API
 * Fail to send raw transaction with not empty data field
 
+### ⚠ BREAKING CHANGES
+* Rename deprecated naming from application metrics `orchestrate_transaction_scheduler_*` to `orchestrate_api_*`
+
 ## v21.1.0 (2021-01-25)
 
 ### 🆕 Features
