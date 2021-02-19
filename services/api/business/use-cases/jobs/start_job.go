@@ -73,16 +73,16 @@ func (uc *startJobUseCase) Execute(ctx context.Context, jobUUID string, tenants 
 			return errors.FromError(err).ExtendComponent(startJobComponent)
 		}
 
-		partition, offset, err := envelope.SendJobMessage(jobEntity, uc.kafkaProducer, uc.topicsCfg.Sender)
-		if err != nil {
-			logger.WithError(err).Error("failed to send job message")
-			return errors.FromError(err).ExtendComponent(startJobComponent)
+		partition, offset, err2 := envelope.SendJobMessage(jobEntity, uc.kafkaProducer, uc.topicsCfg.Sender)
+		if err2 != nil {
+			logger.WithError(err2).Error("failed to send job message")
+			return errors.FromError(err2).ExtendComponent(startJobComponent)
 		}
 
 		logger.WithField("partition", partition).WithField("offset", offset).Info("job started successfully")
 		return nil
 	})
-	
+
 	if err != nil {
 		logger.WithError(err).Info("failed to start job")
 		return errors.FromError(err).ExtendComponent(startJobComponent)
