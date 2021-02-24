@@ -1,6 +1,6 @@
 # Codefi Orchestrate Release Notes
 
-## v2.5.7 (unreleased)
+## v2.5.7 (2021-02-24)
 
 ### 🆕 Features
 * Significant API and DB performance improvements
