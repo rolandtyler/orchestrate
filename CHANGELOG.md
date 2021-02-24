@@ -2,6 +2,9 @@
 
 ## v2.5.7 (unreleased)
 
+### 🆕 Features
+* Significant API and DB performance improvements
+
 ### 🛠 Bug fixes
 * Hanging issue during synchronization from block 0
 

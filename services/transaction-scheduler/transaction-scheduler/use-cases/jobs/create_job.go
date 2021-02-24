@@ -48,6 +48,7 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 		WithField("chain_uuid", job.ChainUUID).
 		WithField("schedule_id", job.ScheduleUUID).
 		WithField("tenants", tenants)
+
 	logger.Debug("creating new job")
 
 	chainID, err := uc.validator.ValidateChainExists(ctx, job.ChainUUID)
@@ -62,9 +63,15 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 	}
 
 	jobModel := parsers.NewJobModelFromEntities(job, &schedule.ID)
+	jobModel.Status = utils.StatusCreated
 	jobModel.Logs = append(jobModel.Logs, &models.Log{
 		Status: utils.StatusCreated,
 	})
+	jobModel.Schedule = schedule
+
+	if err = uc.db.Transaction().Insert(ctx, jobModel.Transaction); err != nil {
+		return nil, errors.FromError(err).ExtendComponent(createJobComponent)
+	}
 
 	err = database.ExecuteInDBTx(uc.db, func(tx database.Tx) error {
 		// If it's a child job, only create it if parent status is PENDING
@@ -73,24 +80,19 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 				return der
 			}
 
-			parentJobModel, der := tx.(store.Tx).Job().FindOneByUUID(ctx, jobModel.InternalData.ParentJobUUID, tenants)
+			parentJobModel, der := tx.(store.Tx).Job().FindOneByUUID(ctx, jobModel.InternalData.ParentJobUUID, tenants, false)
 			if der != nil {
 				return der
 			}
 
-			parentStatus := parsers.NewJobEntityFromModels(parentJobModel).Status
-			if parentStatus != utils.StatusPending {
+			if parentJobModel.Status != utils.StatusPending {
 				errMessage := "cannot create a child job in a finalized schedule"
 				logger.
 					WithField("parent_job_uuid", jobModel.InternalData.ParentJobUUID).
-					WithField("parent_status", parentStatus).
+					WithField("parent_status", parentJobModel.Status).
 					Error(errMessage)
 				return errors.InvalidStateError(errMessage)
 			}
-		}
-
-		if der := tx.(store.Tx).Transaction().Insert(ctx, jobModel.Transaction); der != nil {
-			return der
 		}
 
 		if der := tx.(store.Tx).Job().Insert(ctx, jobModel); der != nil {
@@ -104,6 +106,7 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 
 		return nil
 	})
+
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(createJobComponent)
 	}

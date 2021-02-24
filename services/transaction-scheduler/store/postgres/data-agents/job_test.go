@@ -132,7 +132,7 @@ func (s *jobTestSuite) TestPGJob_FindOneByUUID() {
 	assert.NoError(s.T(), err)
 
 	s.T().Run("should get model successfully with sorted logs", func(t *testing.T) {
-		jobRetrieved, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{multitenancy.Wildcard})
+		jobRetrieved, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{multitenancy.Wildcard}, true)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, jobRetrieved.ID)
@@ -149,14 +149,14 @@ func (s *jobTestSuite) TestPGJob_FindOneByUUID() {
 	})
 
 	s.T().Run("should get model successfully as tenant", func(t *testing.T) {
-		jobRetrieved, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{s.tenantID})
+		jobRetrieved, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{s.tenantID}, false)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, jobRetrieved.ID)
 	})
 
 	s.T().Run("should return NotFoundError if select fails", func(t *testing.T) {
-		_, err := s.agents.Job().FindOneByUUID(ctx, "b6fe7a2a-1a4d-49ca-99d8-8a34aa495ef0", []string{s.tenantID})
+		_, err := s.agents.Job().FindOneByUUID(ctx, "b6fe7a2a-1a4d-49ca-99d8-8a34aa495ef0", []string{s.tenantID}, false)
 		assert.True(t, errors.IsNotFoundError(err))
 	})
 }
@@ -315,18 +315,18 @@ func (s *jobTestSuite) TestPGJob_ConnectionErr() {
 	job := testutils.FakeJobModel(0)
 	s.T().Run("should return PostgresConnectionError if insert fails", func(t *testing.T) {
 		err := s.agents.Job().Insert(ctx, job)
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	s.T().Run("should return PostgresConnectionError if update fails", func(t *testing.T) {
 		job.ID = 1
 		err := s.agents.Job().Update(ctx, job)
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	s.T().Run("should return PostgresConnectionError if update fails", func(t *testing.T) {
-		_, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{job.Schedule.TenantID})
-		assert.True(t, errors.IsPostgresConnectionError(err))
+		_, err := s.agents.Job().FindOneByUUID(ctx, job.UUID, []string{job.Schedule.TenantID}, false)
+		assert.True(t, errors.IsInternalError(err))
 	})
 
 	// We bring it back up

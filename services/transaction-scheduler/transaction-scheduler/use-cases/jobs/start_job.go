@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/database"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
 	usecases "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/use-cases"
 	utils2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/utils"
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store/models"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/parsers"
 )
 
 const startJobComponent = "use-cases.start-job"
@@ -39,15 +39,14 @@ func (uc *startJobUseCase) Execute(ctx context.Context, jobUUID string, tenants 
 	logger := log.WithContext(ctx).WithField("job_uuid", jobUUID)
 	logger.Debug("starting job")
 
-	jobModel, err := uc.db.Job().FindOneByUUID(ctx, jobUUID, tenants)
+	jobModel, err := uc.db.Job().FindOneByUUID(ctx, jobUUID, tenants, false)
 	if err != nil {
 		return errors.FromError(err).ExtendComponent(startJobComponent)
 	}
 
-	jobEntity := parsers.NewJobEntityFromModels(jobModel)
-	if !canUpdateStatus(utils.StatusStarted, jobEntity.Status) {
+	if !canUpdateStatus(utils.StatusStarted, jobModel.Status) {
 		errMessage := "cannot start job at the current status"
-		logger.WithField("status", jobEntity.Status).WithField("next_status", utils.StatusStarted).Error(errMessage)
+		logger.WithField("status", jobModel.Status).WithField("next_status", utils.StatusStarted).Error(errMessage)
 		return errors.InvalidStateError(errMessage)
 	}
 
@@ -59,31 +58,47 @@ func (uc *startJobUseCase) Execute(ctx context.Context, jobUUID string, tenants 
 		msgTopic = uc.topicsCfg.Crafter
 	}
 
-	jobLog := &models.Log{
-		JobID:  &jobModel.ID,
-		Status: utils.StatusStarted,
-	}
-
-	dbtx, err := uc.db.Begin()
+	err = uc.updateStatus(ctx, jobModel, utils.StatusStarted, "")
 	if err != nil {
-		return errors.FromError(err).ExtendComponent(startJobComponent)
-	}
-
-	if err = dbtx.(store.Tx).Log().Insert(ctx, jobLog); err != nil {
-		return errors.FromError(err).ExtendComponent(startJobComponent)
+		return err
 	}
 
 	partition, offset, err := utils2.SendJobMessage(ctx, jobModel, uc.kafkaProducer, msgTopic)
 	if err != nil {
-		_ = dbtx.Rollback()
-		return errors.FromError(err).ExtendComponent(startJobComponent)
-	}
-
-	if err := dbtx.Commit(); err != nil {
+		errMsg := "failed to send job message"
+		_ = uc.updateStatus(ctx, jobModel, utils.StatusFailed, errMsg)
+		logger.WithError(err).Error(errMsg)
 		return errors.FromError(err).ExtendComponent(startJobComponent)
 	}
 
 	logger.WithField("partition", partition).WithField("offset", offset).Info("job started successfully")
+
+	return nil
+}
+
+func (uc *startJobUseCase) updateStatus(ctx context.Context, job *models.Job, status, msg string) error {
+	job.Status = status
+	jobLog := &models.Log{
+		JobID:   &job.ID,
+		Status:  status,
+		Message: msg,
+	}
+
+	err := database.ExecuteInDBTx(uc.db, func(tx database.Tx) error {
+		if err := tx.(store.Tx).Job().Update(ctx, job); err != nil {
+			return err
+		}
+
+		if err := tx.(store.Tx).Log().Insert(ctx, jobLog); err != nil {
+			return errors.FromError(err).ExtendComponent(startJobComponent)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

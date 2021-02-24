@@ -3,6 +3,7 @@ package dataagents
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/types/entities"
 
@@ -63,6 +64,7 @@ func (agent *PGJob) Update(ctx context.Context, job *models.Job) error {
 		job.ScheduleID = &job.Transaction.ID
 	}
 
+	job.UpdatedAt = time.Now().UTC()
 	agent.db.ModelContext(ctx, job)
 	err := pg.Update(ctx, agent.db, job)
 
@@ -74,16 +76,19 @@ func (agent *PGJob) Update(ctx context.Context, job *models.Job) error {
 }
 
 // FindOneByUUID gets a job by UUID
-func (agent *PGJob) FindOneByUUID(ctx context.Context, jobUUID string, tenants []string) (*models.Job, error) {
+func (agent *PGJob) FindOneByUUID(ctx context.Context, jobUUID string, tenants []string, withLogs bool) (*models.Job, error) {
 	job := &models.Job{}
 
 	query := agent.db.ModelContext(ctx, job).
 		Where("job.uuid = ?", jobUUID).
 		Relation("Transaction").
-		Relation("Schedule").
-		Relation("Logs", func(q *orm.Query) (*orm.Query, error) {
+		Relation("Schedule")
+
+	if withLogs {
+		query = query.Relation("Logs", func(q *orm.Query) (*orm.Query, error) {
 			return q.Order("id ASC"), nil
 		})
+	}
 
 	query = pg.WhereAllowedTenants(query, "schedule.tenant_id", tenants).Order("id ASC")
 

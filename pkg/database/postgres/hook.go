@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-pg/pg/v9"
 	log "github.com/sirupsen/logrus"
@@ -9,18 +10,27 @@ import (
 )
 
 func handleError(err error) error {
+	if pg.ErrNoRows == err {
+		return errors.NotFoundError("data cannot be found")
+	}
+	if pg.ErrMultiRows == err {
+		return errors.DataCorruptedError("multiple rows found, only expected one")
+	}
+
 	pgErr, ok := err.(pg.Error)
 	if ok {
 		switch {
 		case pgErr.IntegrityViolation():
-			return errors.AlreadyExistsError("integrity violation: item already exist - %v", pgErr)
+			return errors.ConstraintViolatedError("database integrity violation")
+		case pgErr.Field('C')[0:2] == "22":
+			return errors.InvalidParameterError("database input data- %s", pgErr.Error())
 		// List of codes could be found in https://www.postgresql.org/docs/10/errcodes-appendix.html
 		case pgErr.Field('C')[0:2] == "08":
-			return errors.PostgresConnectionError("database connection error - %v", pgErr)
+			return errors.PostgresConnectionError("database connection error - %s", pgErr.Error())
 		}
 	}
 
-	return errors.FromError(err)
+	return fmt.Errorf("database internal error - %s", err.Error())
 }
 
 type hook struct{}
@@ -29,8 +39,8 @@ func (h hook) BeforeQuery(ctx context.Context, q *pg.QueryEvent) (context.Contex
 	return ctx, nil
 }
 
-func (h hook) AfterQuery(_ context.Context, q *pg.QueryEvent) error {
-	log.Trace(q.FormattedQuery())
+func (h hook) AfterQuery(ctx context.Context, q *pg.QueryEvent) error {
+	log.WithContext(ctx).Trace(q.FormattedQuery())
 	if q.Err != nil {
 		q.Err = handleError(q.Err)
 		return q.Err

@@ -31,7 +31,7 @@ func TestCreateJob_Execute(t *testing.T) {
 	mockTxValidator := mocks2.NewMockTransactionValidator(ctrl)
 
 	mockDB.EXPECT().Begin().Return(mockDBTX, nil).AnyTimes()
-	mockDBTX.EXPECT().Transaction().Return(mockTransactionDA).AnyTimes()
+	mockDB.EXPECT().Transaction().Return(mockTransactionDA).AnyTimes()
 	mockDB.EXPECT().Schedule().Return(mockScheduleDA).AnyTimes()
 	mockDBTX.EXPECT().Job().Return(mockJobDA).AnyTimes()
 	mockDBTX.EXPECT().Log().Return(mockLogDA).AnyTimes()
@@ -71,12 +71,14 @@ func TestCreateJob_Execute(t *testing.T) {
 		fakeSchedule.UUID = jobEntity.ScheduleUUID
 		jobModel := parsers.NewJobModelFromEntities(jobEntity, &fakeSchedule.ID)
 		parentJobModel := testutils2.FakeJobModel(fakeSchedule.ID)
+		parentJobModel.Status = utils.StatusPending
 		parentJobModel.Logs[0].Status = utils.StatusPending
 
 		mockTxValidator.EXPECT().ValidateChainExists(ctx, jobEntity.ChainUUID).Return(chainID, nil)
 		mockScheduleDA.EXPECT().FindOneByUUID(ctx, jobEntity.ScheduleUUID, tenants).Return(fakeSchedule, nil)
 		mockJobDA.EXPECT().LockOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID).Return(nil)
-		mockJobDA.EXPECT().FindOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID, tenants).Return(parentJobModel, nil)
+		mockJobDA.EXPECT().FindOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID, tenants, false).
+			Return(parentJobModel, nil)
 		mockTransactionDA.EXPECT().Insert(gomock.Any(), jobModel.Transaction).Return(nil)
 		mockJobDA.EXPECT().Insert(gomock.Any(), gomock.Any()).Return(nil)
 		mockLogDA.EXPECT().Insert(gomock.Any(), gomock.Any()).Return(nil)
@@ -138,10 +140,14 @@ func TestCreateJob_Execute(t *testing.T) {
 		parentJobModel := testutils2.FakeJobModel(fakeSchedule.ID)
 		parentJobModel.Logs[0].Status = utils.StatusMined
 
+		jobModel := parsers.NewJobModelFromEntities(jobEntity, &fakeSchedule.ID)
+
 		mockTxValidator.EXPECT().ValidateChainExists(ctx, jobEntity.ChainUUID).Return(chainID, nil)
 		mockScheduleDA.EXPECT().FindOneByUUID(ctx, jobEntity.ScheduleUUID, tenants).Return(fakeSchedule, nil)
+		mockTransactionDA.EXPECT().Insert(gomock.Any(), jobModel.Transaction).Return(nil)
 		mockJobDA.EXPECT().LockOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID).Return(nil)
-		mockJobDA.EXPECT().FindOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID, tenants).Return(parentJobModel, nil)
+		mockJobDA.EXPECT().FindOneByUUID(gomock.Any(), jobEntity.InternalData.ParentJobUUID, tenants, false).
+			Return(parentJobModel, nil)
 
 		_, err := usecase.Execute(context.Background(), jobEntity, tenants)
 

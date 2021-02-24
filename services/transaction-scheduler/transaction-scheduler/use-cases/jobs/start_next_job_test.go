@@ -5,11 +5,9 @@ package jobs
 import (
 	"context"
 	"testing"
-	"time"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store/models"
 	mocks2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/use-cases/mocks"
 
 	"github.com/golang/mock/gomock"
@@ -42,17 +40,13 @@ func TestStartNextJob_Execute(t *testing.T) {
 
 		jobModel.NextJobUUID = nextJobModel.UUID
 		jobModel.Transaction.Hash = txHash.String()
-		jobModel.Logs = append(jobModel.Logs, &models.Log{
-			ID:        1,
-			Status:    utils.StatusStored,
-			CreatedAt: time.Now(),
-		})
+		jobModel.Status = utils.StatusStored
 		jobModel.Type = utils.OrionEEATransaction
 		nextJobModel.Type = utils.OrionMarkingTransaction
 
-		mockJobDA.EXPECT().FindOneByUUID(ctx, jobModel.UUID, tenants).
+		mockJobDA.EXPECT().FindOneByUUID(ctx, jobModel.UUID, tenants, false).
 			Return(jobModel, nil)
-		mockJobDA.EXPECT().FindOneByUUID(ctx, nextJobModel.UUID, tenants).
+		mockJobDA.EXPECT().FindOneByUUID(ctx, nextJobModel.UUID, tenants, false).
 			Return(nextJobModel, nil)
 		nextJobModel.Transaction.Data = txHash.String()
 		mockTxDA.EXPECT().Update(ctx, nextJobModel.Transaction).Return(nil)
@@ -71,17 +65,13 @@ func TestStartNextJob_Execute(t *testing.T) {
 		jobModel.NextJobUUID = nextJobModel.UUID
 		jobModel.Transaction.EnclaveKey = enclaveKey
 		jobModel.Transaction.Gas = "0x1"
-		jobModel.Logs = append(jobModel.Logs, &models.Log{
-			ID:        1,
-			Status:    utils.StatusStored,
-			CreatedAt: time.Now(),
-		})
+		jobModel.Status = utils.StatusStored
 		jobModel.Type = utils.TesseraPrivateTransaction
 		nextJobModel.Type = utils.TesseraMarkingTransaction
 
-		mockJobDA.EXPECT().FindOneByUUID(ctx, jobModel.UUID, tenants).
+		mockJobDA.EXPECT().FindOneByUUID(ctx, jobModel.UUID, tenants, false).
 			Return(jobModel, nil)
-		mockJobDA.EXPECT().FindOneByUUID(ctx, nextJobModel.UUID, tenants).
+		mockJobDA.EXPECT().FindOneByUUID(ctx, nextJobModel.UUID, tenants, false).
 			Return(nextJobModel, nil)
 		nextJobModel.Transaction.Data = enclaveKey
 		nextJobModel.Transaction.Gas = "0x1"

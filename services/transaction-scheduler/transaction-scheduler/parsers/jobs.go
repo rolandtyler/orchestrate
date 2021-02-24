@@ -5,7 +5,6 @@ import (
 
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/types/entities"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/types/tx"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store/models"
 )
 
@@ -18,6 +17,7 @@ func NewJobModelFromEntities(job *entities.Job, scheduleID *int) *models.Job {
 		Labels:       job.Labels,
 		InternalData: job.InternalData,
 		ScheduleID:   scheduleID,
+		Status:       job.Status,
 		Schedule: &models.Schedule{
 			UUID:     job.ScheduleUUID,
 			TenantID: job.TenantID,
@@ -49,6 +49,7 @@ func NewJobEntityFromModels(jobModel *models.Job) *entities.Job {
 		NextJobUUID:  jobModel.NextJobUUID,
 		Type:         jobModel.Type,
 		Labels:       jobModel.Labels,
+		Status:       jobModel.Status,
 		InternalData: jobModel.InternalData,
 		Logs:         []*entities.Log{},
 		CreatedAt:    jobModel.CreatedAt,
@@ -64,22 +65,8 @@ func NewJobEntityFromModels(jobModel *models.Job) *entities.Job {
 		job.Transaction = NewTransactionEntityFromModels(jobModel.Transaction)
 	}
 
-	lastLogID := -1
-	for idx, logModel := range jobModel.Logs {
+	for _, logModel := range jobModel.Logs {
 		job.Logs = append(job.Logs, NewLogEntityFromModels(logModel))
-		// Ignore resending and warning statuses
-		if logModel.Status == utils.StatusResending || logModel.Status == utils.StatusWarning {
-			continue
-		}
-		// Ignore fail statuses if they come after a resending
-		if logModel.Status == utils.StatusFailed && idx > 1 && jobModel.Logs[idx-1].Status == utils.StatusResending {
-			continue
-		}
-
-		if logModel.ID > lastLogID {
-			job.Status = logModel.Status
-			lastLogID = logModel.ID
-		}
 	}
 
 	return job

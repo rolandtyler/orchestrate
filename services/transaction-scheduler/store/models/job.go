@@ -16,6 +16,7 @@ type Job struct {
 	ScheduleID    *int   `pg:"alias:schedule_id,notnull"`
 	Schedule      *Schedule
 	Type          string
+	Status        string
 	TransactionID *int `pg:"alias:transaction_id,notnull"`
 	Transaction   *Transaction
 	Logs          []*Log

@@ -516,7 +516,7 @@ func (s *txSchedulerTransactionTestSuite) TestTransactionScheduler_Transactions(
 			return
 		}
 		job := txResponse.Jobs[0]
-		assert.Equal(t, utils.StatusStarted, job.Status)
+		assert.Equal(t, utils.StatusFailed, job.Status)
 	})
 }
 

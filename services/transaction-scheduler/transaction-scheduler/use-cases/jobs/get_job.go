@@ -31,7 +31,7 @@ func (uc *getJobUseCase) Execute(ctx context.Context, jobUUID string, tenants []
 	logger := log.WithContext(ctx).WithField("job_uuid", jobUUID).WithField("tenants", tenants)
 	logger.Debug("getting job")
 
-	jobModel, err := uc.db.Job().FindOneByUUID(ctx, jobUUID, tenants)
+	jobModel, err := uc.db.Job().FindOneByUUID(ctx, jobUUID, tenants, true)
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(getJobComponent)
 	}

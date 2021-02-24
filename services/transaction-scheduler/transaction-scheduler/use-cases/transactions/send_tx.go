@@ -18,6 +18,7 @@ import (
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/utils"
 	chainregistry "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/client"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store"
+	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/store/models"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/parsers"
 	usecases "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/use-cases"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/transaction-scheduler/transaction-scheduler/validators"
@@ -32,7 +33,6 @@ type sendTxUsecase struct {
 	chainRegistryClient chainregistry.ChainRegistryClient
 	startJobUC          usecases.StartJobUseCase
 	createJobUC         usecases.CreateJobUseCase
-	createScheduleUC    usecases.CreateScheduleUseCase
 	getTxUC             usecases.GetTxUseCase
 }
 
@@ -43,7 +43,6 @@ func NewSendTxUseCase(
 	chainRegistryClient chainregistry.ChainRegistryClient,
 	startJobUseCase usecases.StartJobUseCase,
 	createJobUC usecases.CreateJobUseCase,
-	createScheduleUC usecases.CreateScheduleUseCase,
 	getTxUC usecases.GetTxUseCase,
 ) usecases.SendTxUseCase {
 	return &sendTxUsecase{
@@ -52,7 +51,6 @@ func NewSendTxUseCase(
 		chainRegistryClient: chainRegistryClient,
 		startJobUC:          startJobUseCase,
 		createJobUC:         createJobUC,
-		createScheduleUC:    createScheduleUC,
 		getTxUC:             getTxUC,
 	}
 }
@@ -84,22 +82,25 @@ func (uc *sendTxUsecase) Execute(ctx context.Context, txRequest *entities.TxRequ
 	// Otherwise there was another request with same idempotency key and same reqHash
 	job := txRequest.Schedule.Jobs[0]
 	if job.Status == utils.StatusCreated {
-		err = uc.startFaucetJob(ctx, txRequest.Params.From, chainUUID, job.ScheduleUUID, tenantID)
+		var fctJob *entities.Job
+		fctJob, err = uc.startFaucetJob(ctx, txRequest.Params.From, chainUUID, job.ScheduleUUID, tenantID)
 		if err != nil {
 			logger.WithError(err).Error("could not start faucet job")
 			return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
+		}
+		if fctJob != nil {
+			txRequest.Schedule.Jobs = append(txRequest.Schedule.Jobs, fctJob)
 		}
 
 		err = uc.startJobUC.Execute(ctx, job.UUID, []string{tenantID})
 		if err != nil {
 			return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
 		}
-	}
-
-	// Step 5: Load latest Schedule status from DB
-	txRequest, err = uc.getTxUC.Execute(ctx, txRequest.Schedule.UUID, []string{tenantID})
-	if err != nil {
-		return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
+	} else { // Load latest Schedule status from DB
+		txRequest, err = uc.getTxUC.Execute(ctx, txRequest.Schedule.UUID, []string{tenantID})
+		if err != nil {
+			return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
+		}
 	}
 
 	logger.WithField("schedule.uuid", txRequest.Schedule.UUID).Info("send transaction request created successfully")
@@ -146,25 +147,26 @@ func (uc *sendTxUsecase) insertNewTxRequest(
 	txData, requestHash, chainUUID, tenantID string,
 ) (*entities.TxRequest, error) {
 	err := database.ExecuteInDBTx(uc.db, func(dbtx database.Tx) error {
-		schedule, der := uc.createScheduleUC.WithDBTransaction(dbtx.(store.Tx)).Execute(ctx, &entities.Schedule{TenantID: tenantID})
-		if der != nil {
-			return der
-		}
-		txRequest.Schedule = schedule
-
-		scheduleModel, der := dbtx.(store.Tx).Schedule().FindOneByUUID(ctx, txRequest.Schedule.UUID, []string{tenantID})
-		if der != nil {
-			return der
+		schedule := &models.Schedule{TenantID: tenantID}
+		if err := dbtx.(store.Tx).Schedule().Insert(ctx, schedule); err != nil {
+			return err
 		}
 
-		txRequestModel := parsers.NewTxRequestModelFromEntities(txRequest, requestHash, scheduleModel.ID)
-		der = dbtx.(store.Tx).TransactionRequest().Insert(ctx, txRequestModel)
-		if der != nil {
-			return der
+		txRequestModel := parsers.NewTxRequestModelFromEntities(txRequest, requestHash, schedule.ID)
+		if err := dbtx.(store.Tx).TransactionRequest().Insert(ctx, txRequestModel); err != nil {
+			return err
 		}
 
-		sendTxJobs := parsers.NewJobEntitiesFromTxRequest(txRequest, chainUUID, txData)
-		txRequest.Schedule.Jobs = make([]*entities.Job, len(sendTxJobs))
+		txRequest.Schedule = parsers.NewScheduleEntityFromModels(schedule)
+		return nil
+	})
+	if err != nil {
+		return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
+	}
+
+	sendTxJobs := parsers.NewJobEntitiesFromTxRequest(txRequest, chainUUID, txData)
+	txRequest.Schedule.Jobs = make([]*entities.Job, len(sendTxJobs))
+	err = database.ExecuteInDBTx(uc.db, func(dbtx database.Tx) error {
 		var nextJobUUID string
 		for idx, txJob := range sendTxJobs {
 			if nextJobUUID != "" {
@@ -176,37 +178,40 @@ func (uc *sendTxUsecase) insertNewTxRequest(
 				txJob.NextJobUUID = nextJobUUID
 			}
 
-			job, der := uc.createJobUC.WithDBTransaction(dbtx.(store.Tx)).Execute(ctx, txJob, []string{tenantID})
-			if der != nil {
-				return der
+			var job *entities.Job
+			job, err = uc.createJobUC.WithDBTransaction(dbtx.(store.Tx)).
+				Execute(ctx, txJob, []string{tenantID})
+			if err != nil {
+				return err
 			}
 
 			txRequest.Schedule.Jobs[idx] = job
 		}
-
 		return nil
 	})
+
+	if err != nil {
+		return nil, errors.FromError(err).ExtendComponent(sendTxComponent)
+	}
 
 	return txRequest, err
 }
 
 // Execute validates, creates and starts a new transaction for pre funding users account
-func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account, chainUUID, scheduleUUID, tenantID string) error {
+func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account, chainUUID, scheduleUUID, tenantID string) (*entities.Job, error) {
 	if account == "" || account == ethcommon.HexToAddress("0x").String() {
-		return nil
+		return nil, nil
 	}
 
 	logger := log.WithContext(ctx).WithField("chain_uuid", chainUUID)
 
 	fct, err := uc.chainRegistryClient.GetFaucetCandidate(multitenancy.WithTenantID(ctx, tenantID), ethcommon.HexToAddress(account), chainUUID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	if fct == nil {
-		errMsg := "could not find a candidate faucets"
-		logger.Debugf(errMsg)
-		return nil
+		logger.Debug("could not find a candidate faucets")
+		return nil, nil
 	}
 
 	logger.WithFields(log.Fields{
@@ -217,10 +222,15 @@ func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account, chainUUID,
 
 	fctJob, err := uc.createJobUC.Execute(ctx, txJob, []string{tenantID})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return uc.startJobUC.Execute(ctx, fctJob.UUID, []string{tenantID})
+	err = uc.startJobUC.Execute(ctx, fctJob.UUID, []string{tenantID})
+	if err != nil {
+		return fctJob, err
+	}
+
+	return fctJob, nil
 }
 
 func generateFaucetJob(fct *types.Faucet, scheduleUUID, chainUUID, account string) *entities.Job {

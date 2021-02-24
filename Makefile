@@ -186,6 +186,16 @@ down-postgres:
 
 up: deps geth besu quorum bootstrap-deps topics orchestrate ## Start Orchestrate and deps
 
+dev: deps orchestrate ## Start Orchestrate and light deps
+
+geth-dev: deps geth orchestrate ## Start Orchestrate and light deps
+
+besu-dev: deps besu orchestrate ## Start Orchestrate and light besu deps
+
+quorum-dev: deps quorum orchestrate ## Start Orchestrate and light quorum deps
+
+remote-dev: deps-persistent orchestrate
+
 down: down-orchestrate down-quorum down-geth down-besu down-deps  ## Down Orchestrate and deps
 
 up-ci: deps geth besu quorum bootstrap-deps ci-orchestrate ## Start Orchestrate and deps
@@ -245,3 +255,11 @@ nginx:
 
 down-nginx:
 	@docker-compose -f scripts/deps/docker-compose-tools.yml rm --force -s -v nginx nginx-prometheus-exporter
+
+vegeta:
+	@mkdir -p build/vegeta
+	@cat scripts/vegeta/test | vegeta attack -format=http -duration=90s -rate=150/s | tee build/vegeta/results.bin | vegeta report
+	@vegeta report -type=json build/vegeta/results.bin > build/vegeta/metrics.json
+	@cat build/vegeta/results.bin | vegeta plot > build/vegeta/plot.html
+	@cat build/vegeta/results.bin | vegeta report -type="hist[0,100ms,200ms,300ms,500ms]"
+	@$(OPEN) build/vegeta/plot.html 2>/dev/null

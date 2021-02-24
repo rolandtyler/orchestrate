@@ -2,6 +2,7 @@ package dataagents
 
 import (
 	"context"
+	"time"
 
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 
@@ -42,6 +43,7 @@ func (agent *PGTransaction) Update(ctx context.Context, txModel *models.Transact
 		return errors.InvalidArgError("cannot update transaction with missing ID")
 	}
 
+	txModel.UpdatedAt = time.Now().UTC()
 	err := pg.Update(ctx, agent.db, txModel)
 	if err != nil {
 		return errors.FromError(err).ExtendComponent(txDAComponent)

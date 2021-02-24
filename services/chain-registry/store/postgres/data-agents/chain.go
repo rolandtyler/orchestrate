@@ -3,6 +3,7 @@ package dataagents
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/containous/traefik/v2/pkg/log"
 	"github.com/go-pg/pg/v9"
@@ -128,6 +129,8 @@ func (ag *PGChainAgent) UpdateChainByName(ctx context.Context, chainName string,
 		return errors.DataError(err.Error())
 	}
 
+	now := time.Now().UTC()
+	chain.UpdatedAt = &now
 	res, err := postgres.WhereAllowedTenantsDefault(
 		ag.db.ModelContext(ctx, chain).Where("name = ?", chainName), tenants,
 	).UpdateNotZero()

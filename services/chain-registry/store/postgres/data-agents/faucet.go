@@ -2,6 +2,7 @@ package dataagents
 
 import (
 	"context"
+	"time"
 
 	"github.com/containous/traefik/v2/pkg/log"
 	"github.com/go-pg/pg/v9"
@@ -57,7 +58,6 @@ func (ag *PGFaucetAgent) GetFaucets(ctx context.Context, tenants []string, filte
 
 func (ag *PGFaucetAgent) GetFaucet(ctx context.Context, faucetUUID string, tenants []string) (*models.Faucet, error) {
 	faucet := &models.Faucet{}
-
 	err := postgres.WhereAllowedTenantsDefault(ag.db.ModelContext(ctx, faucet), tenants).
 		Where("uuid = ?", faucetUUID).
 		Select()
@@ -75,6 +75,8 @@ func (ag *PGFaucetAgent) GetFaucet(ctx context.Context, faucetUUID string, tenan
 }
 
 func (ag *PGFaucetAgent) UpdateFaucet(ctx context.Context, faucetUUID string, tenants []string, faucet *models.Faucet) error {
+	now := time.Now().UTC()
+	faucet.UpdatedAt = &now
 	res, err := postgres.WhereAllowedTenantsDefault(ag.db.ModelContext(ctx, faucet), tenants).
 		Where("uuid = ?", faucetUUID).
 		UpdateNotZero()

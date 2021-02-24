@@ -74,6 +74,7 @@ func FakeJobModel(scheduleID int) *models.Job {
 		InternalData: &entities.InternalData{
 			ChainID: "888",
 		},
+		Status:    utils.StatusCreated,
 		CreatedAt: time.Now(),
 		Labels:    make(map[string]string),
 	}

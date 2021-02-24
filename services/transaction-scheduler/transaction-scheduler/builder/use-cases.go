@@ -31,7 +31,7 @@ func NewUseCases(
 	startNextJobUC := jobs.NewStartNextJobUseCase(db, startJobUC)
 	getTransactionUC := transactions.NewGetTxUseCase(db, getScheduleUC)
 
-	sendTxUC := transactions.NewSendTxUseCase(txValidator, db, chainRegistryClient, startJobUC, createJobUC, createScheduleUC, getTransactionUC)
+	sendTxUC := transactions.NewSendTxUseCase(txValidator, db, chainRegistryClient, startJobUC, createJobUC, getTransactionUC)
 
 	return &useCases{
 		// Transaction
