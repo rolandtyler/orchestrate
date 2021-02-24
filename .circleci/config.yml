@@ -277,20 +277,6 @@ jobs:
             docker tag ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO}/orchestrate-e2e:${CIRCLE_TAG}
             docker push ${DOCKER_REGISTRY_REPO}/orchestrate-e2e:${CIRCLE_TAG}
 
-  deploy-staging:
-    docker:
-      - image: cimg/base:2020.01
-    steps:
-      - checkout
-      - run:
-          name: Deploy staging environment
-          command: >-
-            ORCHESTRATE_NAMESPACE=staging-${CIRCLE_TAG}
-            ORCHESTRATE_TAG=${CIRCLE_TAG}
-            ORCHESTRATE_REPOSITORY=${DOCKER_REGISTRY_REPO}/orchestrate
-            ENVIRONMENT_VALUES=staging
-            make deploy-remote-env
-
 workflows:
   version: 2
   default:
@@ -395,11 +381,3 @@ workflows:
               ignore: /.*/
           requires:
             - wait-for-approval
-      - deploy-staging:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-          requires:
-            - release-tag
