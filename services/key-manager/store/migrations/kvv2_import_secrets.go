@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	kvv2 "github.com/ConsenSys/orchestrate/pkg/hashicorp/kv-v2"
-	"github.com/ConsenSys/orchestrate/pkg/log"
 	"github.com/ConsenSys/orchestrate/pkg/multitenancy"
+	"github.com/ConsenSys/orchestrate/pkg/toolkit/app/log"
 	"github.com/ConsenSys/orchestrate/services/key-manager/store"
 )
 
