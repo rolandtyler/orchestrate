@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	kvv2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/hashicorp/kv-v2"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/log"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/multitenancy"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/services/key-manager/store"
+	kvv2 "github.com/ConsenSys/orchestrate/pkg/hashicorp/kv-v2"
+	"github.com/ConsenSys/orchestrate/pkg/log"
+	"github.com/ConsenSys/orchestrate/pkg/multitenancy"
+	"github.com/ConsenSys/orchestrate/services/key-manager/store"
 )
 
 func Kvv2ImportSecrets(_ context.Context, vault store.Vault, v2Client *kvv2.Client) error {

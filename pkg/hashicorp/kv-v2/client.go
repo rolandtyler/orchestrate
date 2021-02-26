@@ -6,9 +6,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/ConsenSys/orchestrate/pkg/errors"
+	"github.com/ConsenSys/orchestrate/pkg/hashicorp"
 	"github.com/hashicorp/vault/api"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/errors"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/hashicorp"
 )
 
 // LogicalV2 is a wrapper around api.Logical specialized in dealing with KVV1

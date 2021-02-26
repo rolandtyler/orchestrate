@@ -3,9 +3,9 @@ package kvv2
 import (
 	"fmt"
 
+	"github.com/ConsenSys/orchestrate/pkg/hashicorp"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/hashicorp"
 )
 
 type Config struct {

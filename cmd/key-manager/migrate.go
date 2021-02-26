@@ -1,12 +1,12 @@
 package keymanager
 
 import (
+	kvv2 "github.com/ConsenSys/orchestrate/pkg/hashicorp/kv-v2"
+	keymanager "github.com/ConsenSys/orchestrate/services/key-manager"
+	"github.com/ConsenSys/orchestrate/services/key-manager/store"
+	migrations2 "github.com/ConsenSys/orchestrate/services/key-manager/store/migrations"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	kvv2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/pkg/hashicorp/kv-v2"
-	keymanager "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/services/key-manager"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/services/key-manager/store"
-	migrations2 "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/v2/services/key-manager/store/migrations"
 )
 
 // newMigrateCmd create migrate command
