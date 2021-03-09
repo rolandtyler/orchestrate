@@ -32,7 +32,7 @@ func Init(ctx context.Context) {
 
 		err := importPrivateKey(keyStore, viper.GetStringSlice(secretPkeyViperKey))
 		if err != nil {
-			log.Fatalf("KeyStore: Cannot import private keys, got error: %q", err)
+			log.Fatalf("KeyStore: cannot import private keys, got error: %q", err)
 		}
 
 		log.Info("KeyStore: ready")

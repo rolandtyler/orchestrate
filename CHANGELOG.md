@@ -1,5 +1,11 @@
 # Codefi Orchestrate Release Notes
 
+## v2.5.8 (Unreleased)
+
+### 🛠 Features
+* Watch content of `VAULT_TOKEN_FILE` for token renewal
+* Support for hashicorp wrapped-token 
+
 ## v2.5.7 (2021-02-24)
 
 ### 🆕 Features

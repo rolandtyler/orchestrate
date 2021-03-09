@@ -7,8 +7,8 @@ listener "tcp" {
     tls_disable     = true
 }
 
-default_lease_ttl   = "15m"
-max_lease_ttl       = "1h"
+default_lease_ttl = "30s"
+max_lease_ttl = "1m"
 
 log_level = "Debug"
 

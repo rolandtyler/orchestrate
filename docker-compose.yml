@@ -185,17 +185,6 @@ services:
       - transaction-scheduler
     command: tx-crafter run
 
-  tx-signer-init:
-    build: ./scripts/deps/config/hashicorp
-    environment:
-      VAULT_ADDR: ${VAULT_ADDR-http://vault:8200}
-    networks:
-      - orchestrate
-    volumes:
-      - vault-token:/vault/token
-      - ./scripts/deps/config/hashicorp/renew.sh:/renew.sh
-    command: sh /renew.sh
-
   tx-signer:
     <<: *container-common
     ports:
@@ -206,10 +195,8 @@ services:
       SECRET_PKEY: ${SECRET_PKEY-}
       SECRET_STORE: ${SECRET_STORE-hashicorp}
     volumes:
-      - vault-token:/vault/token:ro
+      - vault-token:/vault/token
       - ./build/bin/orchestrate:/bin/main
-    depends_on:
-      - tx-signer-init
     command: tx-signer run
 
   tx-sender:
