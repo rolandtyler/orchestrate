@@ -1,89 +1,117 @@
 package hashicorp
 
 import (
-	"time"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/fsnotify/fsnotify"
+
+	"github.com/hashicorp/vault/api"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 )
 
-// RenewTokenLoop handle the token renewal of the application
-type RenewTokenLoop struct {
-	TTL  int
-	Quit chan bool
-	Hash *SecretStore
+// renewTokenLoop handle the token tokenWatcher of the application
+type renewTokenWatcher struct {
+	tokenPath string
+	client    *api.Client
+	watcher   *fsnotify.Watcher
+	logger    *log.Entry
+}
 
-	RtlTimeRetry      int // RtlTimeRetry: Time between each retry of token renewal
-	RtlMaxNumberRetry int // RtlMaxNumberRetry: Max number of retry for token renewal
+func newRenewTokenWatcher(client *api.Client, tokenPath string) (*renewTokenWatcher, error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	err = watcher.Add(filepath.Dir(tokenPath))
+	if err != nil {
+		return nil, err
+	}
+
+	return &renewTokenWatcher{
+		tokenPath: tokenPath,
+		client:    client,
+		watcher:   watcher,
+		logger:    log.WithField("token_path", tokenPath),
+	}, nil
 }
 
 // Refresh the token
-func (loop *RenewTokenLoop) Refresh() error {
-	retry := 0
-	for {
-		// Regularly try renewing the token
-		newTokenSecret, err := loop.
-			Hash.Client.Auth().Token().RenewSelf(0)
-
-		if err == nil {
-			loop.Hash.mut.Lock()
-			loop.Hash.Client.Client.SetToken(
-				newTokenSecret.Auth.ClientToken,
-			)
-			loop.Hash.mut.Unlock()
-			log.Info("SecretStore: Vault token was refreshed successfully")
-			return nil
-		}
-
-		retry++
-		if retry < loop.RtlMaxNumberRetry {
-			// Max number number of retry reached: graceful shutdown
-			log.Error("SecretStore: Graceful shutdown of the vault, the token could not be renewed")
-			return errors.InternalError("SecretStore: Token refresh failed (%v)", err).SetComponent(component)
-		}
-
-		time.Sleep(time.Duration(loop.RtlTimeRetry) * time.Second)
+func (rtl *renewTokenWatcher) reloadToken() error {
+	encoded, err := ioutil.ReadFile(rtl.tokenPath)
+	if err != nil {
+		return errors.ConfigError("token file path could not be found")
 	}
+
+	var wrappedToken api.SecretWrapInfo
+	var token string
+	err = json.Unmarshal(encoded, &wrappedToken)
+	if err != nil {
+		// Plain text token
+		decoded := strings.TrimSuffix(string(encoded), "\n") // Remove the newline if it exists
+		token = strings.TrimSuffix(decoded, "\r")            // This one is for windows compatibility
+	} else {
+		// Unwrap token
+		secret, err2 := rtl.client.Logical().Unwrap(wrappedToken.Token)
+		if err2 != nil {
+			return errors.InternalError("could not unwrap token")
+		}
+		token = fmt.Sprintf("%v", secret.Data["token"])
+	}
+
+	rtl.client.SetToken(token)
+	rtl.logger.Info("hashicorp vault token has been renewed")
+
+	// Immediately delete the file after it was read
+	err = os.Remove(rtl.tokenPath)
+	if err != nil {
+		rtl.logger.WithError(err).Warn("could not delete token file")
+	}
+
+	return nil
 }
 
 // Run contains the token regeneration routine
-func (loop *RenewTokenLoop) Run() {
-	go func() {
-		timeToWait := time.Duration(
-			int(float64(loop.TTL)*0.75), // We wait 75% of the TTL to refresh
-		) * time.Second
-
-		// Max token refresh loop of 1h
-		if timeToWait > time.Hour {
-			log.Infof("HashiCorp: forcing token refresh to maximum one hour")
-			timeToWait = time.Hour
-		}
-
-		ticker := time.NewTicker(timeToWait)
-		defer ticker.Stop()
-
-		log.Infof("HashiCorp: token refresh loop started (every %d seconds)", timeToWait/time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				err := loop.Refresh()
-				if err != nil {
-					loop.Quit <- true
-				}
-
-			// TODO: Be able to graceful shutdown every other services in the infra
-			case <-loop.Quit:
-				// The token parameter is ignored
-				_ = loop.Hash.Client.Auth().Token().RevokeSelf("this parameter is ignored")
-				// Erase the local value of the token
-				loop.Hash.mut.Lock()
-				loop.Hash.Client.Client.SetToken("")
-				loop.Hash.mut.Unlock()
-				// Wait 5 seconds for the ongoing requests to return
-				time.Sleep(time.Duration(5) * time.Second)
-				// Crash the tx-signer to force restart
-				log.Fatal("SecretStore: Graceful shutdown of the vault, the token has been revoked")
+func (rtl *renewTokenWatcher) Run(ctx context.Context) error {
+	defer rtl.watcher.Close()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case event, ok := <-rtl.watcher.Events:
+			if !ok {
+				return nil
 			}
+
+			if event.Name != rtl.tokenPath {
+				continue
+			}
+
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				rtl.logger.WithField("event_name", event.Name).Debug("file has been updated")
+				if err := rtl.reloadToken(); err != nil {
+					return err
+				}
+			} else if event.Op&fsnotify.Create == fsnotify.Create {
+				rtl.logger.WithField("event_name", event.Name).Debug("file has been created")
+				if err := rtl.reloadToken(); err != nil {
+					return err
+				}
+			}
+			rtl.logger.Debug("event:", event)
+		case err, ok := <-rtl.watcher.Errors:
+			if !ok {
+				return nil
+			}
+			rtl.logger.WithError(err).Error("failed to watch file events")
+			return err
 		}
-	}()
+	}
 }

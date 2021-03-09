@@ -2,16 +2,12 @@ package hashicorp
 
 import (
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/vault/api"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
 	"golang.org/x/net/http2"
 	"golang.org/x/time/rate"
@@ -111,26 +107,6 @@ func ToVaultConfig(c *Config) *api.Config {
 	config.Backoff = retryablehttp.LinearJitterBackoff
 
 	return config
-}
-
-// SetTokenFromConfig set the initial client token
-func (v *Hashicorp) SetTokenFromConfig(c *Config) error {
-	encoded, err := ioutil.ReadFile(c.TokenFilePath)
-	if err != nil {
-		log.WithError(err).Fatalf("Token file path could not be found: %v", err.Error())
-		return err
-	}
-	// Immediately delete the file after it was read
-	err = os.Remove(c.TokenFilePath)
-	if err != nil {
-		log.WithError(err).Warn("could not delete token file")
-	}
-
-	decoded := strings.TrimSuffix(string(encoded), "\n") // Remove the newline if it exists
-	decoded = strings.TrimSuffix(decoded, "\r")          // This one is for windows compatibility
-	v.Client.SetToken(decoded)
-
-	return nil
 }
 
 // Auth is a shortcut to get the Auth object of the client

@@ -2,8 +2,6 @@ package hashicorp
 
 import (
 	"context"
-	"encoding/json"
-	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/errors"
@@ -12,80 +10,47 @@ import (
 
 // SecretStore wraps a HashiCorp client an manage the unsealing
 type SecretStore struct {
-	mut        sync.Mutex
-	rtl        *RenewTokenLoop
-	Client     *Hashicorp
-	Config     *Config
-	KeyBuilder *multitenancy.KeyBuilder
+	Client       *Hashicorp
+	Config       *Config
+	KeyBuilder   *multitenancy.KeyBuilder
+	tokenWatcher *renewTokenWatcher
 }
 
 // NewSecretStore construct a new HashiCorp vault given a configfile or nil
 func NewSecretStore(config *Config, keyBuilder *multitenancy.KeyBuilder) (*SecretStore, error) {
-	hash, err := NewVaultClient(config)
+	client, err := NewVaultClient(config)
 	if err != nil {
 		return nil, errors.InternalError("HashiCorp: Could not start vault: %v", err)
 	}
 
-	err = hash.SetTokenFromConfig(config)
+	tokenWatcher, err := newRenewTokenWatcher(client.Client, config.TokenFilePath)
 	if err != nil {
-		return nil, errors.InternalError("HashiCorp: Could not start vault: %v", err)
+		return nil, errors.InternalError("HashiCorp: Could not read token: %v", err)
+	}
+
+	if err := tokenWatcher.reloadToken(); err != nil {
+		return nil, err
 	}
 
 	store := &SecretStore{
-		Client:     hash,
-		Config:     config,
-		KeyBuilder: keyBuilder,
-	}
-
-	err = store.ManageToken()
-	if err != nil {
-		return nil, err
+		Client:       client,
+		Config:       config,
+		KeyBuilder:   keyBuilder,
+		tokenWatcher: tokenWatcher,
 	}
 
 	return store, nil
 }
 
-// ManageToken starts a loop that will renew the token automatically
-func (store *SecretStore) ManageToken() error {
-	secret, err := store.Client.Auth().Token().LookupSelf()
-	if err != nil {
-		return errors.InternalError("HashiCorp: Initial token lookup failed: %v", err)
-	}
-
-	log.Infof("HashiCorp: Token data %q", secret.Data)
-	tokenTTL64, err := secret.Data["creation_ttl"].(json.Number).Int64()
-	if err != nil {
-		return errors.InternalError("HashiCorp: Could not read vault creation ttl: %v", err)
-	}
-
-	if int(tokenTTL64) == 0 {
-		log.Info("HashiCorp: token does never expire(root token)")
-		return nil
-	}
-
-	tokenExpireIn64, err := secret.Data["ttl"].(json.Number).Int64()
-	if err != nil {
-		return errors.InternalError("HashiCorp: Could not read vault ttl: %v", err)
-	}
-	log.Debugf("HashiCorp: Vault token expires in %d seconds", tokenExpireIn64)
-
-	store.rtl = &RenewTokenLoop{
-		TTL:               int(tokenExpireIn64),
-		Quit:              make(chan bool, 1),
-		Hash:              store,
-		RtlTimeRetry:      2,
-		RtlMaxNumberRetry: 3,
-	}
-
-	err = store.rtl.Refresh()
-	if err != nil {
-		return errors.InternalError("HashiCorp: Initial token refresh failed: %v", err)
-	}
-
-	log.Info("HashiCorp: Initial token refresh succeeded")
-
-	// Start refresh token loop
-	store.rtl.Run()
+// Start starts a loop that will renew the token automatically
+func (store *SecretStore) Start(ctx context.Context) error {
+	go func() {
+		err := store.tokenWatcher.Run(ctx)
+		if err != nil {
+			log.WithError(err).Fatal("token watcher routine has exited with errors")
+		}
+		log.Warn("token watcher routine has exited gracefully")
+	}()
 
 	return nil
 }

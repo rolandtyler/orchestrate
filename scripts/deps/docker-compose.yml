@@ -50,18 +50,18 @@ services:
     volumes:
       - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
 
-#  redis:
-#    <<: *container-common
-#    build: ./redis
-#    user: root
-#    ports:
-#      - 6379:6379
-#      - 6378:6378
-#    volumes:
-#      - ./config/redis/stunnel.conf:/etc/stunnel/stunnel.conf
-#      - ./config/redis/redis-auth.conf:/etc/redis/redis.conf
-#      - ./redis/init.sh:/init.sh
-#    command: sh /init.sh
+  #  redis:
+  #    <<: *container-common
+  #    build: ./redis
+  #    user: root
+  #    ports:
+  #      - 6379:6379
+  #      - 6378:6378
+  #    volumes:
+  #      - ./config/redis/stunnel.conf:/etc/stunnel/stunnel.conf
+  #      - ./config/redis/redis-auth.conf:/etc/redis/redis.conf
+  #      - ./redis/init.sh:/init.sh
+  #    command: sh /init.sh
 
   postgres-unit:
     <<: *container-common
@@ -102,7 +102,7 @@ services:
 
   vault:
     <<: *container-common
-    image: library/vault:1.1.1
+    image: library/vault:1.6.2
     tty: true
     cap_add:
       - IPC_LOCK
@@ -124,6 +124,20 @@ services:
       - vault-token:/vault/token
       - ./config/hashicorp/init.sh:/init.sh
     command: sh /init.sh
+
+  vault-agent:
+    <<: *container-common
+    image: library/vault:1.6.2
+    tty: true
+    depends_on:
+      - vault
+      - vault-init
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-token:/vault/token
+      - ./config/hashicorp//agent-config.hcl:/vault/config.hcl:ro
+    entrypoint: vault agent -config=/vault/config.hcl
 
   jaeger:
     <<: *container-common

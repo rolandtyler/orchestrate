@@ -2,9 +2,10 @@ GOFILES := $(shell find . -name '*.go' -not -path "./vendor/*" | grep -v pkg/htt
 PACKAGES ?= $(shell go list ./... | grep -Fv -e e2e -e examples -e genstatic -e mock )
 INTEGRATION_TEST_PACKAGES ?= $(shell go list ./... | grep integration-tests )
 CMD_RUN = tx-crafter tx-signer tx-sender tx-listener contract-registry chain-registry transaction-scheduler
-CMD_PERSISTENT = redis postgres-chain-registry postgres-contract-registry postgres-transaction-scheduler vault-init vault jaeger
+CMD_PERSISTENT = redis postgres-chain-registry postgres-contract-registry postgres-transaction-scheduler jaeger
 CMD_KAFKA = zookeeper kafka
 CMD_MIGRATE = contract-registry chain-registry transaction-scheduler
+DEPS_VAULT = vault vault-init vault-agent
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -145,7 +146,10 @@ down-orchestrate:## Down Orchestrate
 deps-persistent:
 	@docker-compose -f scripts/deps/docker-compose.yml up -d $(CMD_PERSISTENT)
 
-deps: deps-persistent
+deps-vault:
+	@docker-compose -f scripts/deps/docker-compose.yml up -d $(DEPS_VAULT)
+
+deps: deps-vault deps-persistent
 	@docker-compose -f scripts/deps/docker-compose.yml up -d $(CMD_KAFKA)
 
 down-deps:
