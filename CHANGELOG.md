@@ -115,6 +115,13 @@ each of the service DBs you intend to migrate:
 $> orchestrate api migrate copy-db
 ```
 
+## v2.5.8 (2021-06-02)
+
+### 🛠 Features
+* Watch content of `VAULT_TOKEN_FILE` for token renewal
+* Support for hashicorp wrapped-token 
+* Support for metadata on chains
+
 ## v2.5.7 (2021-02-24)
 
 ### 🆕 Features
