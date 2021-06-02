@@ -62,6 +62,7 @@ func parsePatchReqToChain(request *http.Request) (*models.Chain, error) {
 	chain := models.Chain{
 		Name:                      chainRequest.Name,
 		URLs:                      chainRequest.URLs,
+		Labels:                    chainRequest.Labels,
 		ListenerCurrentBlock:      chainRequest.Listener.CurrentBlock,
 		ListenerBackOffDuration:   chainRequest.Listener.BackOffDuration,
 		ListenerDepth:             chainRequest.Listener.Depth,

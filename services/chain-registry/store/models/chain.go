@@ -21,6 +21,7 @@ type Chain struct {
 	ListenerStartingBlock     *uint64                  `json:"listenerStartingBlock,string,omitempty"`
 	ListenerBackOffDuration   *string                  `json:"listenerBackOffDuration,omitempty" validate:"required_with=UUID,omitempty,isDuration"`
 	ListenerExternalTxEnabled *bool                    `json:"listenerExternalTxEnabled,omitempty"`
+	Labels                    map[string]string        `json:"labels,omitempty"`
 	CreatedAt                 *time.Time               `json:"createdAt" pg:"default:now()"`
 	UpdatedAt                 *time.Time               `json:"updatedAt,omitempty"`
 	PrivateTxManagers         []*PrivateTxManagerModel `json:"privateTxManagers,omitempty" pg:"-" validate:"omitempty,dive,required"`

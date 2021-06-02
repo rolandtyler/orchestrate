@@ -70,6 +70,7 @@ func parsePostReqToChain(request *http.Request) (*models.Chain, error) {
 		ListenerBackOffDuration:   chainRequest.Listener.BackOffDuration,
 		ListenerDepth:             chainRequest.Listener.Depth,
 		ListenerExternalTxEnabled: chainRequest.Listener.ExternalTxEnabled,
+		Labels:                    chainRequest.Labels,
 	}
 
 	if chainRequest.PrivateTxManager != nil {

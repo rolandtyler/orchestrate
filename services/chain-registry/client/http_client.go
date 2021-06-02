@@ -144,8 +144,9 @@ func (c *HTTPClient) RegisterChain(ctx context.Context, chain *models.Chain) (*m
 		fromBlock = &(&struct{ x string }{strconv.FormatUint(*chain.ListenerStartingBlock, 10)}).x
 	}
 	postReq := chainsctrl.PostRequest{
-		Name: chain.Name,
-		URLs: chain.URLs,
+		Name:   chain.Name,
+		URLs:   chain.URLs,
+		Labels: chain.Labels,
 		Listener: &chainsctrl.ListenerPostRequest{
 			BackOffDuration:   chain.ListenerBackOffDuration,
 			FromBlock:         fromBlock,
@@ -200,8 +201,9 @@ func (c *HTTPClient) UpdateChainByUUID(ctx context.Context, chainUUID string, ch
 	reqURL := fmt.Sprintf("%v/chains/%v", c.config.URL, chainUUID)
 
 	patchReq := chainsctrl.PatchRequest{
-		Name: chain.Name,
-		URLs: chain.URLs,
+		Name:   chain.Name,
+		URLs:   chain.URLs,
+		Labels: chain.Labels,
 		Listener: &chainsctrl.ListenerPatchRequest{
 			BackOffDuration:   chain.ListenerBackOffDuration,
 			Depth:             chain.ListenerDepth,

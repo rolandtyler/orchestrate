@@ -17,6 +17,7 @@ type PostRequest struct {
 	URLs             []string                 `json:"urls" pg:"urls,array" validate:"required,min=1,unique,dive,url"`
 	Listener         *ListenerPostRequest     `json:"listener,omitempty"`
 	PrivateTxManager *PrivateTxManagerRequest `json:"privateTxManager,omitempty"`
+	Labels           map[string]string        `json:"labels,omitempty"`
 }
 
 type ListenerPostRequest struct {
@@ -31,6 +32,7 @@ type PatchRequest struct {
 	URLs             []string                 `json:"urls,omitempty" pg:"urls,array" validate:"omitempty,min=1,unique,dive,url"`
 	Listener         *ListenerPatchRequest    `json:"listener,omitempty"`
 	PrivateTxManager *PrivateTxManagerRequest `json:"privateTxManager,omitempty"`
+	Labels           map[string]string        `json:"labels,omitempty"`
 }
 
 type ListenerPatchRequest struct {

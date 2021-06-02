@@ -7,8 +7,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	ethclient "gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/pkg/ethclient/rpc"
 	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/chain-registry/utils"
-	"gitlab.com/ConsenSys/client/fr/core-stack/orchestrate.git/services/chain-registry/store/models"
 )
+
+// Minimum version of model to perform migration actions
+type chain struct {
+	tableName struct{} `pg:"chains"` // nolint
+
+	UUID     string `pg:",pk"`
+	Name     string
+	TenantID string
+	ChainID  string
+	URLs     []string `pg:"urls,array"`
+}
 
 func addChainIDColumn(db migrations.DB) error {
 	log.Debugf("Adding chainID column on table %q...", "chains")
@@ -32,7 +42,7 @@ ALTER TABLE chains
 		return err
 	}
 
-	log.Infof("Added chainID columns on table %q", "chains")
+	log.Infof("Added chainID columns on table %s", "chains")
 
 	err = updateChainIDs(context.Background(), db)
 	if err != nil {
@@ -64,7 +74,7 @@ ALTER TABLE chains
 		return err
 	}
 
-	log.Infof("Removed chainID column on table %q", "chains")
+	log.Infof("Removed chainID column on table %s", "chains")
 
 	return nil
 }
@@ -77,27 +87,27 @@ func updateChainIDs(ctx context.Context, db migrations.DB) error {
 
 	log.Debugf("fetching chainIDs from rpc nodes")
 
-	var chains []*models.Chain
+	var chains []*chain
 	err := db.Model(&chains).Where(`chain_id = ?`, 0).Select()
 	if err != nil {
 		return err
 	}
 
-	for _, chain := range chains {
-		chainID, err := utils.GetChainID(ctx, ec, chain.URLs)
+	for _, c := range chains {
+		chainID, err := utils.GetChainID(ctx, ec, c.URLs)
 		if err != nil {
 			return err
 		}
 
-		_, err = db.Model(&models.Chain{ChainID: chainID.String()}).
-			Where("uuid = ?", chain.UUID).UpdateNotZero()
+		_, err = db.Model(&chain{ChainID: chainID.String()}).
+			Where("uuid = ?", c.UUID).UpdateNotZero()
 
 		if err != nil {
 			return err
 		}
 
-		log.WithField("chainName", chain.Name).
-			WithField("chainUUID", chain.UUID).
+		log.WithField("chainName", c.Name).
+			WithField("chainUUID", c.UUID).
 			WithField("chainID", chainID).
 			Infof("chain was updated correctly")
 	}
