@@ -52,6 +52,7 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 	if job.Transaction.From != "" {
 		err = uc.validateAccountExists(ctx, job.Transaction.From, tenants)
 		if err != nil {
+			logger.WithError(err).WithField("from", job.Transaction.From).Error("account does not exists")
 			return nil, errors.FromError(err).ExtendComponent(createJobComponent)
 		}
 	}
