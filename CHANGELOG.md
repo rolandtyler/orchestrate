@@ -1,5 +1,10 @@
 # Codefi Orchestrate Release Notes
 
+## v2.5.9 (2021-07-07)
+
+### 🛠 Bug fixes
+* Database overload querying for registered chains
+
 ## v2.5.8 (2021-06-02)
 
 ### 🛠 Features

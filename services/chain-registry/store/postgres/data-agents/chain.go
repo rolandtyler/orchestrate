@@ -82,15 +82,30 @@ func (ag *PGChainAgent) GetChains(ctx context.Context, tenants []string, filters
 		return nil, errors.PostgresConnectionError("error loading chains").ExtendComponent(chainComponentName)
 	}
 
-	for idx, c := range chains {
-		err = ag.db.ModelContext(ctx, &chains[idx].PrivateTxManagers).
-			Where(fmt.Sprintf(`chain_uuid = '%s'`, c.UUID)).
-			Select()
+	if len(chains) == 0 {
+		return chains, nil
+	}
 
-		if err != nil {
-			log.FromContext(ctx).WithError(err).Errorf("could not load private tx managers")
-			return nil, errors.PostgresConnectionError("error loading chains").ExtendComponent(chainComponentName)
-		}
+	// We manually link chains to privateTxManager avoiding GO-PG strategy of one query per chain
+	chainUUIDs := make([]string, len(chains))
+	chainsMap := map[string]*models.Chain{}
+	for idx, c := range chains {
+		chainUUIDs[idx] = c.UUID
+		chainsMap[c.UUID] = c
+	}
+
+	var privateTxManagers []*models.PrivateTxManagerModel
+	query := ag.db.ModelContext(ctx, &privateTxManagers)
+	query = query.Where("chain_uuid in (?)", pg.In(chainUUIDs))
+
+	if err := query.Context(ctx).Select(); err != nil {
+		errMsg := "could not load private tx managers"
+		log.FromContext(ctx).WithError(err).Errorf(errMsg)
+		return nil, errors.PostgresConnectionError(errMsg).ExtendComponent(chainComponentName)
+	}
+
+	for _, pm := range privateTxManagers {
+		chainsMap[pm.ChainUUID].PrivateTxManagers = []*models.PrivateTxManagerModel{pm}
 	}
 
 	return chains, nil
