@@ -176,5 +176,6 @@ func (uc *signEEATransactionUseCase) getSignedRawEEATransaction(ctx context.Cont
 		return nil, errors.CryptoOperationError(errMessage)
 	}
 
+	logger.WithError(err).WithField("raw", hexutil.Encode(signedRaw)).Warn("SIGNED EEA TX")
 	return signedRaw, nil
 }
