@@ -50,7 +50,13 @@ tests/report/output/report.html
 tests/report/output/report.json
 
 # Plugin download
-services/key-manager/integration-tests/plugins
+services/api/integration-tests/plugins
+services/api/integration-tests/manifests
+
+services/tx-sender/integration-tests/plugins
+services/tx-sender/integration-tests/manifests
+
+!**/**/.gitkeep
 
 # API Doc
 node_modules
