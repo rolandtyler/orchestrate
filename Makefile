@@ -130,7 +130,7 @@ gobuild-e2e: ## Build Orchestrate e2e Docker image
 	@GOOS=linux GOARCH=amd64 go build -i -o ./build/bin/test ./tests/cmd
 
 orchestrate: gobuild ## Start Orchestrate
-	@docker-compose up -d $(ORCH_SERVICES)
+	@docker-compose up --force-recreate --build -d $(ORCH_SERVICES)
 
 ci-orchestrate:
 	@docker-compose up -d $(ORCH_SERVICES)
