@@ -1,5 +1,9 @@
 # Orchestrate Release Notes
 
+## v21.1.8 (WIP)
+### 🛠 Bug fixes
+* Incorrect server name verification using Postgres in `verify-ca` mode 
+ 
 ## v21.1.8 (2021-08-25)
 ### 🛠 Bug fixes
 * Wrong tenant assigment when API_KEY was not defined
