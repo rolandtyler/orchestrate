@@ -72,6 +72,9 @@ gen-swagger:
 	@go generate github.com/ConsenSys/orchestrate/services/api/service/controllers
 	@go generate github.com/ConsenSys/orchestrate/services/key-manager/service/controllers
 
+serve-swagger: gen-swagger
+	@swagger serve -F=swagger ./public/swagger-specs/services/api/swagger.json
+
 gen-deepcopy:
 	@bash scripts/deepcopy/generate.sh
 
