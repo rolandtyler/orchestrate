@@ -22,7 +22,7 @@ commands:
   # - staging
   # potential remote namespace: 
   # - staging-v21-1 (CIRCLE_TAG=v21.1.4)
-  # - qa (CIRCLE_BRANCH=master)
+  # - qa (CIRCLE_BRANCH=main)
   # - qa-v21-1 (CIRCLE_BRANCH=maintenance/v21.1)
   set_remote_environment_variables:
     description: "Set remote environment values"
@@ -59,10 +59,10 @@ commands:
             - run:
                 name: Set Orchestrate Namespace
                 command: |
-                 if [ "${CIRCLE_TAG}" ]; then echo 'export TAG=${CIRCLE_TAG%.*}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
-                 elif [ "${CIRCLE_BRANCH}" == "master" ]; then echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}' >> $BASH_ENV; 
-                 else echo 'export TAG=${CIRCLE_BRANCH#"maintenance/"}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
-                 fi
+                  if [ "${CIRCLE_TAG}" ]; then echo 'export TAG=${CIRCLE_TAG%.*}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
+                  elif [ "${CIRCLE_BRANCH}" == "main" ]; then echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}' >> $BASH_ENV; 
+                  else echo 'export TAG=${CIRCLE_BRANCH#"maintenance/"}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
+                  fi
 
   prepare_e2e:
     description: "Orchestrate e2e environment"
@@ -246,6 +246,27 @@ jobs:
             ORCHESTRATE_REPOSITORY=${DOCKER_REGISTRY_DEV_REPO}/orchestrate
             make deploy-remote-env
 
+  run-e2e-local:
+    machine:
+      image: ubuntu-2004:202010-01
+    resource_class: xlarge
+    steps:
+      - run:
+          name: Uninstall Go
+          command: sudo rm -rvf /usr/local/go/
+      - go/install:
+          version: 1.16.8
+      - prepare_golang
+      - run:
+          name: e2e local tests
+          command: |
+            set +e
+            cp .env.multitenancy .env
+            make up
+            echo "Wait 20 seconds for services to boot up correctly..."
+            sleep 20
+            make run-e2e
+
   run-e2e:
     docker:
       - image: cimg/go:1.15.8-node
@@ -401,10 +422,20 @@ workflows:
               only: /^v.*/
             branches:
               only: /.*/
+      - run-e2e-local:
+            filters:
+              branches:
+                only: main
+            requires:
+              - lint
+              - gobuild
+              - test
+              - race
+              - integration
       - push-orchestrate-image:
           filters:
             branches:
-              only: master
+              only: main
             tags:
               only: /^v.*/
           requires:
@@ -413,41 +444,42 @@ workflows:
             - test
             - race
             - integration
-      - push-orchestrate-e2e-image:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
-          requires:
-            - lint
-            - gobuild
-            - test
-            - race
-            - integration
-      - deploy-qa:
-          filters:
-            branches:
-              only: master
-          requires:
-            - push-orchestrate-image
-      - run-e2e:
-          filters:
-            branches:
-              only: master
-          requires:
-            - deploy-qa
-      - run-stress:
-          filters:
-            branches:
-              only: master
-          requires:
-            - run-e2e
-            - deploy-qa
+            - run-e2e-local
+#      - push-orchestrate-e2e-image:
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^v.*/
+#          requires:
+#            - lint
+#            - gobuild
+#            - test
+#            - race
+#            - integration
+#      - deploy-qa:
+#          filters:
+#            branches:
+#              only: main
+#          requires:
+#            - push-orchestrate-image
+#      - run-e2e:
+#          filters:
+#            branches:
+#              only: main
+#          requires:
+#            - deploy-qa
+#      - run-stress:
+#          filters:
+#            branches:
+#              only: main
+#          requires:
+#            - run-e2e
+#            - deploy-qa
       - release-latest:
           filters:
             branches:
-              only: master
+              only: main
             tags:
               ignore: /.*/
           requires:
@@ -471,14 +503,14 @@ workflows:
               ignore: /.*/
           requires:
             - wait-for-approval
-      - deploy-staging:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-          requires:
-            - release-tag
+#      - deploy-staging:
+#          filters:
+#            tags:
+#              only: /^v.*/
+#            branches:
+#              ignore: /.*/
+#          requires:
+#            - release-tag
   # schedule-stress:
   #   triggers:
   #     - schedule:
@@ -486,7 +518,7 @@ workflows:
   #         filters:
   #           branches:
   #             only:
-  #               - master
+  #               - main
   #   jobs:
   #     - run-stress:
   #         environment_values: "staging"

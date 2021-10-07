@@ -1,6 +1,6 @@
 # Orchestrate Release Notes
 
-## v21.1.8 (WIP)
+## v21.1.9 (WIP)
 ### 🛠 Bug fixes
 * Incorrect server name verification using Postgres in `verify-ca` mode 
 * Tx-sender exits sending Tessera private transaction with invalid 'from'
