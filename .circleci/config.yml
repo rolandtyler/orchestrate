@@ -362,12 +362,12 @@ jobs:
       - prepare_docker
       - docker_build_image
       - run:
-          name: Release latest
+          name: Release tagged version
           command: |
             docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
             docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
 
-            docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
+            docker tag ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG} ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
             docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
 
   deploy-staging:
@@ -433,6 +433,8 @@ workflows:
           filters:
             branches:
               only: main
+            tags:
+              only: /^v.*/
           requires:
             - run-e2e-local
       - wait-for-approval:
@@ -443,7 +445,7 @@ workflows:
             branches:
               ignore: /.*/
           requires:
-            - push-orchestrate-image
+            - run-e2e-local
       - release-tag:
           filters:
             tags:
