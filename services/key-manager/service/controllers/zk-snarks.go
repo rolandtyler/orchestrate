@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ConsenSys/orchestrate/pkg/toolkit/app/log"
+
 	jsonutils "github.com/ConsenSys/orchestrate/pkg/encoding/json"
 	"github.com/ConsenSys/orchestrate/pkg/errors"
 	"github.com/ConsenSys/orchestrate/pkg/toolkit/app/http/httputil"
@@ -42,11 +44,12 @@ func (c *ZKSController) Append(router *mux.Router) {
 // @Success 200 {object} []string "List of zk-snarks public namespaces"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /zk-snarks/namespaces [get]
-func (c *ZKSController) listNamespaces(rw http.ResponseWriter, _ *http.Request) {
+func (c *ZKSController) listNamespaces(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	namespaces, err := c.vault.ZKSListNamespaces()
 	if err != nil {
+		log.WithContext(req.Context()).WithError(err).Error("failed to list namespaces")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
@@ -63,22 +66,27 @@ func (c *ZKSController) listNamespaces(rw http.ResponseWriter, _ *http.Request) 
 // @Failure 400 {object} httputil.ErrorResponse "Invalid request"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /zk-snarks/accounts [post]
-func (c *ZKSController) createAccount(rw http.ResponseWriter, request *http.Request) {
+func (c *ZKSController) createAccount(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	accountRequest := &types.CreateZKSAccountRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, accountRequest)
+	err := jsonutils.UnmarshalBody(req.Body, accountRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("namespace", accountRequest.Namespace)
+	logger.Debug("creating zk-snark account")
+
 	accountResponse, err := c.vault.ZKSCreateAccount(accountRequest.Namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to create zk-snark account")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.Info("zk-snark account created successfully")
 	_ = json.NewEncoder(rw).Encode(formatters.FormatZKSAccountResponse(accountResponse))
 }
 
@@ -94,12 +102,16 @@ func (c *ZKSController) listAccounts(rw http.ResponseWriter, req *http.Request) 
 
 	namespace := req.URL.Query().Get("namespace")
 
+	logger := log.WithContext(req.Context()).WithField("namespace", namespace)
+
 	accountAddrs, err := c.vault.ZKSListAccounts(namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to list zk-snark accounts")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.Debug("zk-snark accounts listed successfully")
 	_ = json.NewEncoder(rw).Encode(accountAddrs)
 }
 
@@ -116,16 +128,22 @@ func (c *ZKSController) getAccount(rw http.ResponseWriter, req *http.Request) {
 	publicKey := mux.Vars(req)["publicKey"]
 	namespace := req.URL.Query().Get("namespace")
 
+	logger := log.WithContext(req.Context()).WithField("public_key", publicKey).WithField("namespace", namespace)
+
 	ethAcc, err := c.vault.ZKSGetAccount(publicKey, namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to get zk-snark account")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 	if ethAcc == nil {
+		errMessage := "zk-snark account not found"
+		logger.Debug(errMessage)
 		httputil.WriteHTTPErrorResponse(rw, errors.NotFoundError("account not found"))
 		return
 	}
 
+	logger.Debug("zk-snark account retrieved successfully")
 	_ = json.NewEncoder(rw).Encode(ethAcc)
 }
 
@@ -148,12 +166,17 @@ func (c *ZKSController) signPayload(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	publicKey := mux.Vars(req)["publicKey"]
+
+	logger := log.WithContext(req.Context()).WithField("public_key", publicKey).WithField("namespace", signRequest.Namespace)
+
 	signature, err := c.vault.ZKSSign(publicKey, signRequest.Namespace, signRequest.Data)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign payload")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("payload signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -166,19 +189,23 @@ func (c *ZKSController) signPayload(rw http.ResponseWriter, req *http.Request) {
 // @Failure 422 {object} httputil.ErrorResponse "Failed to verify"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /zk-snarks/accounts/verify-signature [post]
-func (c *ZKSController) verifySignature(rw http.ResponseWriter, request *http.Request) {
+func (c *ZKSController) verifySignature(rw http.ResponseWriter, req *http.Request) {
 	verifyRequest := &types.VerifyPayloadRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, verifyRequest)
+	err := jsonutils.UnmarshalBody(req.Body, verifyRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = c.useCases.VerifySignature().Execute(request.Context(), verifyRequest.PublicKey, verifyRequest.Signature, verifyRequest.Data)
+	logger := log.WithContext(req.Context()).WithField("public_key", verifyRequest.PublicKey)
+
+	err = c.useCases.VerifySignature().Execute(req.Context(), verifyRequest.PublicKey, verifyRequest.Signature, verifyRequest.Data)
 	if err != nil {
+		logger.WithError(err).Error("failed to verify signature")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("signature verified successfully")
 	rw.WriteHeader(http.StatusNoContent)
 }

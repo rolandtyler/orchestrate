@@ -1,7 +1,7 @@
 ############################
 # STEP 1 build executable Orchestrate binary
 ############################
-FROM golang:1.15-buster AS builder
+FROM golang:1.16-buster AS builder
 
 RUN apt-get update && \
 	apt-get install --no-install-recommends -y \

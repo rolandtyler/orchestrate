@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ConsenSys/orchestrate/pkg/toolkit/app/log"
+
 	"github.com/ConsenSys/orchestrate/pkg/types/keymanager"
 	usecases "github.com/ConsenSys/orchestrate/services/key-manager/key-manager/use-cases"
 
@@ -30,7 +32,7 @@ func NewEthereumController(vault store.Vault, useCases usecases.ETHUseCases) *Et
 	return &EthereumController{vault: vault, useCases: useCases}
 }
 
-// Add routes to router
+// Append Add routes to router
 func (c *EthereumController) Append(router *mux.Router) {
 	router.Methods(http.MethodGet).Path("/ethereum/namespaces").HandlerFunc(c.listNamespaces)
 	router.Methods(http.MethodPost).Path(ethAccountPath).HandlerFunc(c.createAccount)
@@ -55,22 +57,27 @@ func (c *EthereumController) Append(router *mux.Router) {
 // @Failure 400 {object} httputil.ErrorResponse "Invalid request"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts [post]
-func (c *EthereumController) createAccount(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) createAccount(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	ethAccountRequest := &types.CreateETHAccountRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, ethAccountRequest)
+	err := jsonutils.UnmarshalBody(req.Body, ethAccountRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("namespace", ethAccountRequest.Namespace)
+	logger.Debug("creating ethereum account")
+
 	accountResponse, err := c.vault.ETHCreateAccount(ethAccountRequest.Namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to create ethereum account")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.Info("ethereum account created successfully")
 	_ = json.NewEncoder(rw).Encode(formatters.FormatETHAccountResponse(accountResponse))
 }
 
@@ -86,12 +93,16 @@ func (c *EthereumController) listAccounts(rw http.ResponseWriter, req *http.Requ
 
 	namespace := req.URL.Query().Get("namespace")
 
+	logger := log.WithContext(req.Context()).WithField("namespace", namespace)
+
 	accountAddrs, err := c.vault.ETHListAccounts(namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to list ethereum accounts")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.Debug("ethereum accounts listed successfully")
 	_ = json.NewEncoder(rw).Encode(accountAddrs)
 }
 
@@ -101,15 +112,17 @@ func (c *EthereumController) listAccounts(rw http.ResponseWriter, req *http.Requ
 // @Success 200 {object} []string "List of ethereum public namespaces"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/namespaces [get]
-func (c *EthereumController) listNamespaces(rw http.ResponseWriter, _ *http.Request) {
+func (c *EthereumController) listNamespaces(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	namespaces, err := c.vault.ETHListNamespaces()
 	if err != nil {
+		log.WithContext(req.Context()).WithError(err).Error("failed to list namespaces")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	log.WithContext(req.Context()).Debug("namespaces listed successfully")
 	_ = json.NewEncoder(rw).Encode(namespaces)
 }
 
@@ -130,16 +143,21 @@ func (c *EthereumController) getAccount(rw http.ResponseWriter, req *http.Reques
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", namespace)
 	ethAcc, err := c.vault.ETHGetAccount(address, namespace)
 	if err != nil {
+		logger.WithError(err).Error("failed to get ethereum account")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 	if ethAcc == nil {
-		httputil.WriteHTTPErrorResponse(rw, errors.NotFoundError("account not found"))
+		errMessage := "ethereum account not found"
+		logger.Debug(errMessage)
+		httputil.WriteHTTPErrorResponse(rw, errors.NotFoundError(errMessage))
 		return
 	}
 
+	logger.Debug("ethereum account retrieved successfully")
 	_ = json.NewEncoder(rw).Encode(ethAcc)
 }
 
@@ -153,22 +171,27 @@ func (c *EthereumController) getAccount(rw http.ResponseWriter, req *http.Reques
 // @Failure 422 {object} httputil.ErrorResponse "Invalid private key"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/import [post]
-func (c *EthereumController) importAccount(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) importAccount(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	ethAccountRequest := &types.ImportETHAccountRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, ethAccountRequest)
+	err := jsonutils.UnmarshalBody(req.Body, ethAccountRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("namespace", ethAccountRequest.Namespace)
+	logger.Debug("importing ethereum account")
+
 	accountResponse, err := c.vault.ETHImportAccount(ethAccountRequest.Namespace, ethAccountRequest.PrivateKey)
 	if err != nil {
+		logger.WithError(err).Error("failed to import account")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.Debug("account imported successfully")
 	_ = json.NewEncoder(rw).Encode(formatters.FormatETHAccountResponse(accountResponse))
 }
 
@@ -183,26 +206,30 @@ func (c *EthereumController) importAccount(rw http.ResponseWriter, request *http
 // @Failure 404 {object} httputil.ErrorResponse "Account not found"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/{address}/sign [post]
-func (c *EthereumController) signPayload(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) signPayload(rw http.ResponseWriter, req *http.Request) {
 	signRequest := &keymanager.SignPayloadRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, signRequest)
+	err := jsonutils.UnmarshalBody(req.Body, signRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(request)["address"])
+	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(req)["address"])
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", signRequest.Namespace)
 
 	signature, err := c.vault.ETHSign(address, signRequest.Namespace, signRequest.Data)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign payload")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("payload signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -217,26 +244,29 @@ func (c *EthereumController) signPayload(rw http.ResponseWriter, request *http.R
 // @Failure 404 {object} httputil.ErrorResponse "Account not found"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/{address}/sign-transaction [post]
-func (c *EthereumController) signTransaction(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) signTransaction(rw http.ResponseWriter, req *http.Request) {
 	signRequest := &types.SignETHTransactionRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, signRequest)
+	err := jsonutils.UnmarshalBody(req.Body, signRequest)
+	if err != nil {
+		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(req)["address"])
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(request)["address"])
-	if err != nil {
-		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", signRequest.Namespace)
 
 	signature, err := c.vault.ETHSignTransaction(address, signRequest)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign transaction")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("transaction signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -251,26 +281,30 @@ func (c *EthereumController) signTransaction(rw http.ResponseWriter, request *ht
 // @Failure 404 {object} httputil.ErrorResponse "Account not found"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/{address}/sign-quorum-private-transaction [post]
-func (c *EthereumController) signQuorumPrivate(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) signQuorumPrivate(rw http.ResponseWriter, req *http.Request) {
 	signRequest := &types.SignQuorumPrivateTransactionRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, signRequest)
+	err := jsonutils.UnmarshalBody(req.Body, signRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(request)["address"])
+	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(req)["address"])
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", signRequest.Namespace)
 
 	signature, err := c.vault.ETHSignQuorumPrivateTransaction(address, signRequest)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign quorum private transaction")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("quorum private transaction signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -285,9 +319,9 @@ func (c *EthereumController) signQuorumPrivate(rw http.ResponseWriter, request *
 // @Failure 404 {object} httputil.ErrorResponse "Account not found"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/{address}/sign-eea-transaction [post]
-func (c *EthereumController) signEEA(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) signEEA(rw http.ResponseWriter, req *http.Request) {
 	signRequest := &types.SignEEATransactionRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, signRequest)
+	err := jsonutils.UnmarshalBody(req.Body, signRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -299,18 +333,22 @@ func (c *EthereumController) signEEA(rw http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(request)["address"])
+	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(req)["address"])
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", signRequest.Namespace)
+
 	signature, err := c.vault.ETHSignEEATransaction(address, signRequest)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign eea transaction")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("eea transaction signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -326,27 +364,31 @@ func (c *EthereumController) signEEA(rw http.ResponseWriter, request *http.Reque
 // @Failure 422 {object} httputil.ErrorResponse "Invalid parameters"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/{address}/sign-typed-data [post]
-func (c *EthereumController) signTypedData(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) signTypedData(rw http.ResponseWriter, req *http.Request) {
 	signRequest := &types.SignTypedDataRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, signRequest)
+	err := jsonutils.UnmarshalBody(req.Body, signRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(request)["address"])
+	address, err := utils.ParseHexToMixedCaseEthAddress(mux.Vars(req)["address"])
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	logger := log.WithContext(req.Context()).WithField("address", address).WithField("namespace", signRequest.Namespace)
 
 	typedData := formatters.FormatSignTypedDataRequest(signRequest)
-	signature, err := c.useCases.SignTypedData().Execute(request.Context(), address, signRequest.Namespace, typedData)
+	signature, err := c.useCases.SignTypedData().Execute(req.Context(), address, signRequest.Namespace, typedData)
 	if err != nil {
+		logger.WithError(err).Error("failed to sign typed data")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("typed data signed successfully")
 	_, _ = rw.Write([]byte(signature))
 }
 
@@ -360,9 +402,9 @@ func (c *EthereumController) signTypedData(rw http.ResponseWriter, request *http
 // @Failure 422 {object} httputil.ErrorResponse "Invalid parameters"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/verify-typed-data-signature [post]
-func (c *EthereumController) verifyTypedDataSignature(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) verifyTypedDataSignature(rw http.ResponseWriter, req *http.Request) {
 	verifyRequest := &types.VerifyTypedDataRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, verifyRequest)
+	err := jsonutils.UnmarshalBody(req.Body, verifyRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -374,13 +416,17 @@ func (c *EthereumController) verifyTypedDataSignature(rw http.ResponseWriter, re
 		return
 	}
 
+	logger := log.WithContext(req.Context()).WithField("address", address)
+
 	typedData := formatters.FormatSignTypedDataRequest(&verifyRequest.TypedData)
-	err = c.useCases.VerifyTypedDataSignature().Execute(request.Context(), address, verifyRequest.Signature, typedData)
+	err = c.useCases.VerifyTypedDataSignature().Execute(req.Context(), address, verifyRequest.Signature, typedData)
 	if err != nil {
+		logger.WithError(err).Error("failed to verify typed data signature")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("typed data signature verified successfully")
 	rw.WriteHeader(http.StatusNoContent)
 }
 
@@ -393,9 +439,9 @@ func (c *EthereumController) verifyTypedDataSignature(rw http.ResponseWriter, re
 // @Failure 422 {object} httputil.ErrorResponse "Failed to verify"
 // @Failure 500 {object} httputil.ErrorResponse "Internal server error"
 // @Router /ethereum/accounts/verify-signature [post]
-func (c *EthereumController) verifySignature(rw http.ResponseWriter, request *http.Request) {
+func (c *EthereumController) verifySignature(rw http.ResponseWriter, req *http.Request) {
 	verifyRequest := &types.VerifyPayloadRequest{}
-	err := jsonutils.UnmarshalBody(request.Body, verifyRequest)
+	err := jsonutils.UnmarshalBody(req.Body, verifyRequest)
 	if err != nil {
 		httputil.WriteError(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -407,11 +453,15 @@ func (c *EthereumController) verifySignature(rw http.ResponseWriter, request *ht
 		return
 	}
 
-	err = c.useCases.VerifySignature().Execute(request.Context(), address, verifyRequest.Signature, verifyRequest.Data)
+	logger := log.WithContext(req.Context()).WithField("address", address)
+
+	err = c.useCases.VerifySignature().Execute(req.Context(), address, verifyRequest.Signature, verifyRequest.Data)
 	if err != nil {
+		logger.WithError(err).Error("failed to verify signature")
 		httputil.WriteHTTPErrorResponse(rw, err)
 		return
 	}
 
+	logger.WithError(err).Debug("signature verified successfully")
 	rw.WriteHeader(http.StatusNoContent)
 }

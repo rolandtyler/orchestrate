@@ -16,11 +16,12 @@ commands:
           name: Docker login
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+            echo $DOCKER_PASS_2 | docker login -u $DOCKER_USER_2 --password-stdin $DOCKER_REGISTRY_2
 
   # potential remote environment values
   # - qa
   # - staging
-  # potential remote namespace: 
+  # potential remote namespace:
   # - staging-v21-1 (CIRCLE_TAG=v21.1.4)
   # - qa (CIRCLE_BRANCH=main)
   # - qa-v21-1 (CIRCLE_BRANCH=maintenance/v21.1)
@@ -60,7 +61,7 @@ commands:
                 name: Set Orchestrate Namespace
                 command: |
                   if [ "${CIRCLE_TAG}" ]; then echo 'export TAG=${CIRCLE_TAG%.*}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
-                  elif [ "${CIRCLE_BRANCH}" == "main" ]; then echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}' >> $BASH_ENV; 
+                  elif [ "${CIRCLE_BRANCH}" == "main" ]; then echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}' >> $BASH_ENV;
                   else echo 'export TAG=${CIRCLE_BRANCH#"maintenance/"}' >> $BASH_ENV && echo 'export ORCHESTRATE_NAMESPACE=${ENVIRONMENT_VALUES}-${TAG//./-}' >> $BASH_ENV;
                   fi
 
@@ -89,12 +90,14 @@ commands:
             echo 'export KAFKA_SASL_MECHANISM=PLAIN' >> $BASH_ENV
             echo 'export KAFKA_SASL_USER=${QA_KAFKA_SASL_USER}' >> $BASH_ENV
             echo 'export KAFKA_SASL_PASSWORD=${QA_KAFKA_SASL_PASSWORD}' >> $BASH_ENV
+            echo 'export KEY_MANAGER_URL=${QA_QUORUM_KEY_MANAGER_URL}' >> $BASH_ENV
+            echo 'export KEY_MANAGER_STORE_NAME=${QA_KEY_MANAGER_STORE_NAME}' >> $BASH_ENV
             echo 'export TOPIC_TX_SENDER=${ORCHESTRATE_NAMESPACE}-tx-sender' >> $BASH_ENV
             echo 'export TOPIC_TX_RECOVER=${ORCHESTRATE_NAMESPACE}-tx-recover' >> $BASH_ENV
             echo 'export TOPIC_TX_DECODED=${ORCHESTRATE_NAMESPACE}-tx-decoded' >> $BASH_ENV
             echo 'export MULTI_TENANCY_ENABLED=true' >> $BASH_ENV
             echo 'export AUTH_API_KEY=${QA_AUTH_API_KEY}' >> $BASH_ENV
-            echo 'export AUTH_JWT_CLAIMS_NAMESPACE=orchestrate.namespace' >> $BASH_ENV 
+            echo 'export AUTH_JWT_CLAIMS_NAMESPACE=orchestrate.namespace' >> $BASH_ENV
             echo 'export AUTH_JWT_CERTIFICATE=${QA_AUTH_JWT_CERTIFICATE}' >> $BASH_ENV
             echo 'export AUTH_JWT_PRIVATE_KEY=${QA_AUTH_JWT_PRIVATE_KEY}' >> $BASH_ENV
             echo 'export TEST_GLOBAL_DATA=${QA_TEST_GLOBAL_DATA}' >> $BASH_ENV
@@ -118,9 +121,10 @@ commands:
             --label org.opencontainers.image.licenses="BUSL-1.1"
             -f ./Dockerfile.e2e
             -q
-            -t ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7} .
+            --build-arg VERSION=debug
+            -t orchestrate-e2e:${CIRCLE_SHA1:0:7} .
 
-  docker_build_dev:
+  docker_build_image:
     description: "Build Orchestrate"
     steps:
       - run:
@@ -138,13 +142,14 @@ commands:
             --label org.opencontainers.image.documentation="https://docs.orchestrate.consensys.net/"
             --label org.opencontainers.image.licenses="BUSL-1.1"
             -q
-            -t ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7} .
+            -t orchestrate:${CIRCLE_SHA1:0:7} .
 
 jobs:
   lint:
     executor:
       name: go/default
-      tag: '1.15.7'
+      tag: '1.16.8'
+    resource_class: xlarge
     steps:
       - prepare_golang
       - run:
@@ -156,7 +161,7 @@ jobs:
   gobuild:
     executor:
       name: go/default
-      tag: '1.15.7'
+      tag: '1.16.8'
     steps:
       - prepare_golang
       - run:
@@ -165,8 +170,8 @@ jobs:
 
   test:
     docker:
-      - image: cimg/go:1.15.7
-      - image: postgres:13.1-alpine
+      - image: cimg/go:1.16.8
+      - image: postgres:13.4-alpine
         environment:
           POSTGRES_PASSWORD: "postgres"
           DB_HOST: "postgres"
@@ -179,7 +184,7 @@ jobs:
 
   race:
     docker:
-      - image: cimg/go:1.15.7
+      - image: cimg/go:1.16.8
     resource_class: xlarge
     steps:
       - prepare_golang
@@ -188,14 +193,15 @@ jobs:
           command: make race
 
   integration:
-    machine: true
-    resource_class: xlarge
+    machine:
+      image: ubuntu-2004:202010-01
+    resource_class: 2xlarge
     steps:
       - run:
           name: Uninstall Go
           command: sudo rm -rvf /usr/local/go/
       - go/install:
-          version: 1.15.7
+          version: 1.16.8
       - prepare_golang
       - run:
           name: Integration tests
@@ -211,27 +217,32 @@ jobs:
           version: 19.03.13
           docker_layer_caching: true
       - prepare_docker
-      - docker_build_dev
+      - docker_build_image
       - run:
           name: Deploy image in dev repository
           command: |
+            docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7}
             docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7}
 
-  push-orchestrate-e2e-image:
-    docker:
-      - image: cimg/base:2020.01
-    resource_class: large
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 19.03.13
-          docker_layer_caching: true
-      - prepare_docker
-      - docker_build_e2e_dev
-      - run:
-          name: Deploy e2e image in dev repository
-          command: |
-            docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
+            docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:develop
+            docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:develop
+
+  #  push-orchestrate-e2e-image:
+  #    docker:
+  #      - image: cimg/base:2020.01
+  #    resource_class: large
+  #    steps:
+  #      - checkout
+  #      - setup_remote_docker:
+  #          version: 19.03.13
+  #          docker_layer_caching: true
+  #      - prepare_docker
+  #      - docker_build_e2e_dev
+  #      - run:
+  #          name: Deploy e2e image in dev repository
+  #          command: |
+  #            docker tag orchestrate-e2e:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
+  #            docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
 
   deploy-qa:
     docker:
@@ -249,7 +260,7 @@ jobs:
   run-e2e-local:
     machine:
       image: ubuntu-2004:202010-01
-    resource_class: xlarge
+    resource_class: 2xlarge
     steps:
       - run:
           name: Uninstall Go
@@ -269,7 +280,7 @@ jobs:
 
   run-e2e:
     docker:
-      - image: cimg/go:1.15.8-node
+      - image: cimg/go:1.16.8-node
     resource_class: large
     steps:
       - prepare_golang
@@ -307,7 +318,7 @@ jobs:
 
   run-stress:
     docker:
-      - image: cimg/go:1.15.8
+      - image: cimg/go:1.16.8
     resource_class: large
     parameters:
       environment_values:
@@ -340,22 +351,6 @@ jobs:
             KAFKA_CONSUMER_GROUP_NAME: "stress"
           command: ./build/bin/test stress
 
-  release-latest:
-    docker:
-      - image: cimg/base:2020.01
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 19.03.13
-          docker_layer_caching: true
-      - prepare_docker
-      - run:
-          name: Release latest
-          command: |
-            docker pull ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7}
-            docker tag ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO}/orchestrate:latest
-            docker push ${DOCKER_REGISTRY_REPO}/orchestrate:latest
-
   release-tag:
     docker:
       - image: cimg/base:2020.01
@@ -365,15 +360,15 @@ jobs:
           version: 19.03.13
           docker_layer_caching: true
       - prepare_docker
+      - docker_build_image
       - run:
-          name: Release tagged version
+          name: Release latest
           command: |
-            docker pull ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7}
-            docker tag ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO}/orchestrate:${CIRCLE_TAG}
-            docker push ${DOCKER_REGISTRY_REPO}/orchestrate:${CIRCLE_TAG}
-            docker pull ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
-            docker tag ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO}/orchestrate-e2e:${CIRCLE_TAG}
-            docker push ${DOCKER_REGISTRY_REPO}/orchestrate-e2e:${CIRCLE_TAG}
+            docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
+            docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
+
+            docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
+            docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
 
   deploy-staging:
     docker:
@@ -423,16 +418,6 @@ workflows:
             branches:
               only: /.*/
       - run-e2e-local:
-            filters:
-              branches:
-                only: main
-            requires:
-              - lint
-              - gobuild
-              - test
-              - race
-              - integration
-      - push-orchestrate-image:
           filters:
             branches:
               only: main
@@ -444,57 +429,21 @@ workflows:
             - test
             - race
             - integration
-            - run-e2e-local
-#      - push-orchestrate-e2e-image:
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^v.*/
-#          requires:
-#            - lint
-#            - gobuild
-#            - test
-#            - race
-#            - integration
-#      - deploy-qa:
-#          filters:
-#            branches:
-#              only: main
-#          requires:
-#            - push-orchestrate-image
-#      - run-e2e:
-#          filters:
-#            branches:
-#              only: main
-#          requires:
-#            - deploy-qa
-#      - run-stress:
-#          filters:
-#            branches:
-#              only: main
-#          requires:
-#            - run-e2e
-#            - deploy-qa
-      - release-latest:
+      - push-orchestrate-image:
           filters:
             branches:
               only: main
-            tags:
-              ignore: /.*/
           requires:
-            - run-e2e
-            - run-stress
+            - run-e2e-local
       - wait-for-approval:
           type: approval
-          requires:
-            - push-orchestrate-e2e-image
-            - push-orchestrate-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
+          requires:
+            - push-orchestrate-image
       - release-tag:
           filters:
             tags:
@@ -503,14 +452,45 @@ workflows:
               ignore: /.*/
           requires:
             - wait-for-approval
-#      - deploy-staging:
-#          filters:
-#            tags:
-#              only: /^v.*/
-#            branches:
-#              ignore: /.*/
-#          requires:
-#            - release-tag
+  #      - push-orchestrate-e2e-image:
+  #          filters:
+  #            branches:
+  #              ignore: /.*/
+  #            tags:
+  #              only: /^v.*/
+  #          requires:
+  #            - lint
+  #            - gobuild
+  #            - test
+  #            - race
+  #            - integration
+  #      - deploy-qa:
+  #          filters:
+  #            branches:
+  #              only: main
+  #          requires:
+  #            - push-orchestrate-image
+  #      - run-e2e:
+  #          filters:
+  #            branches:
+  #              only: main
+  #          requires:
+  #            - deploy-qa
+  #      - run-stress:
+  #          filters:
+  #            branches:
+  #              only: main
+  #          requires:
+  #            - run-e2e
+  #            - deploy-qa
+  #      - deploy-staging:
+  #          filters:
+  #            tags:
+  #              only: /^v.*/
+  #            branches:
+  #              ignore: /.*/
+  #          requires:
+  #            - release-tag
   # schedule-stress:
   #   triggers:
   #     - schedule:
