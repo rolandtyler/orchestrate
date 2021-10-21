@@ -35,7 +35,7 @@ import (
 )
 
 const postgresContainerID = "postgres-api"
-const kafkaContainerID = "Kafka-api"
+const kafkaContainerID = "kafka-api"
 const zookeeperContainerID = "zookeeper-api"
 const ganacheContainerID = "ganache-api"
 const keyManagerURL = "http://key-manager:8081"

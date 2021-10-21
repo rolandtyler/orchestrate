@@ -69,7 +69,6 @@ func NewSaramaConfig() (*sarama.Config, error) {
 		}
 		cfg.Net.TLS.Config = tlsConfig
 	}
-	cfg.Metadata.Full = false
 
 	return cfg, nil
 }
