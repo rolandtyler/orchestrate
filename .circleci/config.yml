@@ -433,8 +433,6 @@ workflows:
           filters:
             branches:
               only: main
-            tags:
-              only: /^v.*/
           requires:
             - run-e2e-local
       - wait-for-approval:
