@@ -63,7 +63,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -108,12 +108,13 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "14000000")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		envelope.GasPrice = nil
 		envelope.Gas = nil
 		envelope.Nonce = nil
+		envelope = envelope.SetPriority(utils.PriorityVeryHigh)
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
 		if err != nil {
 			assert.Fail(t, err.Error())
@@ -151,7 +152,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
@@ -161,7 +162,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "", "6000000")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
@@ -172,6 +173,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 		envelope.GasPrice = nil
 		envelope.Gas = nil
 		envelope.Nonce = nil
+		envelope = envelope.SetPriority(utils.PriorityVeryLow)
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
 		if err != nil {
 			assert.Fail(t, err.Error())
@@ -194,13 +196,13 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		// IMPORTANT: As we cannot infer txHash before hand, status will be updated to WARNING
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest().EnableTxFromOneTimeKey())
@@ -228,7 +230,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -274,7 +276,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(422).JSON(httputil.ErrorResponse{
 			Message: "cannot update status",
 			Code:    666,
@@ -282,7 +284,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		envelope.Nonce = nil
@@ -321,12 +323,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -371,7 +373,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest().EnableTxFromOneTimeKey())
@@ -394,7 +396,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
@@ -404,7 +406,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
@@ -437,12 +439,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest().EnableTxFromOneTimeKey())
@@ -497,7 +499,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_EEA() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		envelope.Nonce = nil
@@ -527,7 +529,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_EEA() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest().EnableTxFromOneTimeKey())
@@ -554,7 +556,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_EEA() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest().EnableTxFromOneTimeKey())
@@ -610,7 +612,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Marking() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -642,7 +644,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Marking() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 		
 		gock.New(apiURL).
@@ -654,7 +656,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Marking() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusResending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
@@ -688,13 +690,13 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Marking() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		// HASH won't match
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		envelope.Nonce = nil
@@ -726,12 +728,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Marking() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -775,7 +777,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Private() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusStored, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		envelope.Nonce = nil
@@ -803,7 +805,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Tessera_Private() {
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 			Reply(200).JSON(&api.JobResponse{})
 
 		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
@@ -858,14 +860,14 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 			gock.New(apiURL).
 				Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-				AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, fmt.Sprintf("%d", idx))).
+				AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, fmt.Sprintf("%d", idx), "")).
 				Reply(200).JSON(&api.JobResponse{})
 
 			// Warning because txHash does not match
 			if idx > 0 {
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, fmt.Sprintf("%d", idx))).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, fmt.Sprintf("%d", idx), "")).
 					Reply(200).JSON(&api.JobResponse{})
 			}
 
@@ -909,7 +911,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, fmt.Sprintf("%d", idx))).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, fmt.Sprintf("%d", idx), "")).
 					Reply(200).JSON(&api.JobResponse{})
 			}
 
@@ -920,7 +922,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "1")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "1", "")).
 					Reply(200).JSON(&api.JobResponse{})
 
 				resp := utils2.JSONRpcMessage{Error: &utils2.JSONError{Code: 100, Message: "nonce too low"}}
@@ -937,7 +939,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusRecovering, "")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusRecovering, "", "")).
 					Reply(200).JSON(&api.JobResponse{})
 
 				gock.New(apiURL).
@@ -947,12 +949,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "2")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "2", "")).
 					Reply(200).JSON(&api.JobResponse{})
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "", "")).
 					Reply(200).JSON(&api.JobResponse{})
 			}
 
@@ -968,12 +970,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "3")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "3", "")).
 					Reply(200).JSON(&api.JobResponse{})
 
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "3")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusWarning, "3", "")).
 					Reply(200).JSON(&api.JobResponse{})
 			}
 
@@ -1010,7 +1012,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 
 			gock.New(apiURL).
 				Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-				AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "0")).
+				AddMatcher(txStatusUpdateMatcher(wg, entities.StatusPending, "0", "")).
 				Reply(200).JSON(&api.JobResponse{})
 
 			resp := utils2.JSONRpcMessage{Error: &utils2.JSONError{Code: 100, Message: "nonce too low"}}
@@ -1023,12 +1025,12 @@ func (s *txSenderEthereumTestSuite) TestTxSender_XNonceManager() {
 			if idx < maxRecoveryDefault {
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusRecovering, "")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusRecovering, "", "")).
 					Reply(200).JSON(&api.JobResponse{})
 			} else {
 				gock.New(apiURL).
 					Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
-					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "")).
+					AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
 					Reply(200).JSON(&api.JobResponse{})
 			}
 
@@ -1170,7 +1172,7 @@ func waitTimeout(wg *multierror.Group, duration time.Duration) error {
 	}
 }
 
-func txStatusUpdateMatcher(wg *multierror.Group, status entities.JobStatus, nonce string) gock.MatchFunc {
+func txStatusUpdateMatcher(wg *multierror.Group, status entities.JobStatus, nonce string, gasPrice string) gock.MatchFunc {
 	cerr := make(chan error, 1)
 	wg.Go(func() error {
 		return <-cerr
@@ -1196,6 +1198,11 @@ func txStatusUpdateMatcher(wg *multierror.Group, status entities.JobStatus, nonc
 		}
 		if nonce != "" && req.Transaction.Nonce != nonce {
 			err := fmt.Errorf("invalid nonce, got %s, expected %s", req.Transaction.Nonce, nonce)
+			cerr <- err
+			return false, err
+		}
+		if gasPrice != "" && req.Transaction.GasPrice != gasPrice {
+			err := fmt.Errorf("invalid gasPrice, got %s, expected %s", req.Transaction.GasPrice, gasPrice)
 			cerr <- err
 			return false, err
 		}

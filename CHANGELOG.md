@@ -1,8 +1,14 @@
 # Orchestrate Release Notes
 
+## v21.1.10 (WIP)
+
+### 🛠 Bug fixes
+* Transaction `priority` is applied as expected
+
+
 ## v21.1.9 (2021-10-21)
 ### 🛠 Bug fixes
-* Incorrect server name verification using Postgres in `verify-ca` mode 
+* Incorrect server name verification using Postgres in `verify-ca` mode
 * Tx-sender exits sending Tessera private transaction with invalid 'from'
 * Added logging in key-manager microservice
 
@@ -67,7 +73,7 @@
 
 #### Identity Management API
 * Release the Identity API on top of the `orchestate-api`, allowing dynamic CRUD operation over accounts whose keys are stored in Vault
-* Integrate [Orchestrate HashiCorp Vault plugin](https://github.com/Consensys/orchestrate-hashicorp-vault-plugin) to enhance security
+* Integrate [Orchestrate HashiCorp Vault plugin](https://github.com/consensys/orchestrate-hashicorp-vault-plugin) to enhance security
 
 #### Metrics & logging
 * Add application metrics:

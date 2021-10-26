@@ -56,6 +56,10 @@ func NewEnvelopeFromJob(job *entities.Job, headers map[string]string) *tx.TxEnve
 		txEnvelope.SetParentJobUUID(job.InternalData.ParentJobUUID)
 	}
 
+	if job.InternalData.Priority != "" {
+		txEnvelope.SetPriority(job.InternalData.Priority)
+	}
+
 	return txEnvelope
 }
 
@@ -70,6 +74,7 @@ func NewJobFromEnvelope(envelope *tx.Envelope, tenantID string) *entities.Job {
 			OneTimeKey:    envelope.IsOneTimeKeySignature(),
 			ChainID:       envelope.GetChainIDString(),
 			ParentJobUUID: envelope.GetParentJobUUID(),
+			Priority:      envelope.GetPriority(),
 		},
 		TenantID: tenantID,
 		Transaction: &entities.ETHTransaction{
