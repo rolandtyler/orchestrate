@@ -1,10 +1,10 @@
 # Orchestrate Release Notes
 
-## v21.1.10 (WIP)
+## v21.1.10 (2021-10-28)
 
 ### 🛠 Bug fixes
 * Transaction `priority` is applied as expected
-
+* Sender is not funded in raw transactions
 
 ## v21.1.9 (2021-10-21)
 ### 🛠 Bug fixes

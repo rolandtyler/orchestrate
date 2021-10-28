@@ -4,12 +4,11 @@ package integrationtests
 
 import (
 	"context"
-	"github.com/ConsenSys/orchestrate/pkg/types/api"
-	"github.com/ConsenSys/orchestrate/pkg/types/entities"
-	"github.com/stretchr/testify/require"
-
 	"testing"
 	"time"
+
+	"github.com/ConsenSys/orchestrate/pkg/types/entities"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ConsenSys/orchestrate/pkg/errors"
 	"github.com/ConsenSys/orchestrate/pkg/sdk/client"
@@ -137,81 +136,6 @@ func (s *transactionsTestSuite) TestSuccess() {
 		assert.Equal(t, evlp.PartitionKey(), "")
 	})
 
-	s.T().Run("should send a transaction with an additional faucet job", func(t *testing.T) {
-		defer gock.Off()
-
-		chainWithFaucet, err := s.client.RegisterChain(s.env.ctx, &api.RegisterChainRequest{
-			Name: "ganache-with-faucet",
-			URLs: []string{s.env.blockchainNodeURL},
-			Listener: api.RegisterListenerRequest{
-				FromBlock:         "latest",
-				ExternalTxEnabled: false,
-			},
-		})
-		require.NoError(t, err)
-
-		accountFaucet := testutils.FakeAccount()
-		accountFaucet.Alias = "MyFaucetCreditor"
-		accountFaucet.Address = "0xc675Ad3c014706878f93d9d2c0a17a23DBFf3425"
-		gock.New(keyManagerURL).Post("/ethereum/accounts/import").Reply(200).JSON(accountFaucet)
-		_, err = s.client.ImportAccount(s.env.ctx, testutils.FakeImportAccountRequest())
-		require.NoError(t, err)
-
-		faucetRequest := testutils.FakeRegisterFaucetRequest()
-		faucetRequest.Name = "faucet-integration-tests"
-		faucetRequest.ChainRule = chainWithFaucet.UUID
-		faucetRequest.CreditorAccount = accountFaucet.Address
-		faucet, err := s.client.RegisterFaucet(s.env.ctx, faucetRequest)
-		require.NoError(s.T(), err)
-
-		txRequest := testutils.FakeSendTransferTransactionRequest()
-		txRequest.ChainName = chainWithFaucet.Name
-		IdempotencyKey := utils.RandString(16)
-		rctx := context.WithValue(ctx, clientutils.RequestHeaderKey, map[string]string{
-			controllers.IdempotencyKeyHeader: IdempotencyKey,
-		})
-		txResponse, err := s.client.SendTransferTransaction(rctx, txRequest)
-		require.NoError(t, err)
-		assert.NotEmpty(t, txResponse.UUID)
-		assert.NotEmpty(t, txResponse.IdempotencyKey)
-
-		txResponseGET, err := s.client.GetTxRequest(ctx, txResponse.UUID)
-		require.NoError(t, err)
-		require.Len(t, txResponseGET.Jobs, 2)
-
-		faucetJob := txResponseGET.Jobs[1]
-		txJob := txResponseGET.Jobs[0]
-		assert.Equal(t, faucetJob.ChainUUID, faucet.ChainRule)
-		assert.Equal(t, entities.StatusStarted, faucetJob.Status)
-		assert.Equal(t, entities.EthereumTransaction, faucetJob.Type)
-		assert.Equal(t, faucetJob.Transaction.To, txJob.Transaction.From)
-		assert.Equal(t, faucetJob.Transaction.Value, faucet.Amount)
-
-		assert.NotEmpty(t, txResponseGET.UUID)
-		assert.NotEmpty(t, txJob.UUID)
-		assert.Equal(t, txJob.ChainUUID, faucet.ChainRule)
-		assert.Equal(t, entities.StatusStarted, txJob.Status)
-		assert.Equal(t, txRequest.Params.From, txJob.Transaction.From)
-		assert.Equal(t, txRequest.Params.To, txJob.Transaction.To)
-		assert.Equal(t, entities.EthereumTransaction, txJob.Type)
-
-		fctEvlp, err := s.env.consumer.WaitForEnvelope(faucetJob.ScheduleUUID, s.env.kafkaTopicConfig.Sender, waitForEnvelopeTimeOut)
-		require.NoError(t, err)
-		assert.Equal(t, faucetJob.ScheduleUUID, fctEvlp.GetID())
-		assert.Equal(t, faucetJob.UUID, fctEvlp.GetJobUUID())
-		assert.Equal(t, tx.JobTypeMap[entities.EthereumTransaction].String(), fctEvlp.GetJobTypeString())
-
-		jobEvlp, err := s.env.consumer.WaitForEnvelope(txJob.ScheduleUUID, s.env.kafkaTopicConfig.Sender, waitForEnvelopeTimeOut)
-		require.NoError(t, err)
-		assert.Equal(t, txJob.ScheduleUUID, jobEvlp.GetID())
-		assert.Equal(t, txJob.UUID, jobEvlp.GetJobUUID())
-
-		err = s.client.DeleteChain(ctx, chainWithFaucet.UUID)
-		assert.NoError(t, err)
-		err = s.client.DeleteFaucet(ctx, faucet.UUID)
-		assert.NoError(t, err)
-	})
-
 	s.T().Run("should send a tessera transaction successfully", func(t *testing.T) {
 		txRequest := testutils.FakeSendTesseraRequest()
 
@@ -242,10 +166,7 @@ func (s *transactionsTestSuite) TestSuccess() {
 		assert.Equal(t, entities.TesseraMarkingTransaction, markingTxJob.Type)
 
 		privTxEvlp, err := s.env.consumer.WaitForEnvelope(privTxJob.ScheduleUUID, s.env.kafkaTopicConfig.Sender, waitForEnvelopeTimeOut)
-		if err != nil {
-			assert.Fail(t, err.Error())
-			return
-		}
+		require.NoError(t, err)
 
 		assert.Equal(t, privTxJob.ScheduleUUID, privTxEvlp.GetID())
 		assert.Equal(t, privTxJob.UUID, privTxEvlp.GetJobUUID())

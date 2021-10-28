@@ -183,7 +183,7 @@ func (uc *craftTxUseCase) craftGasPrice(ctx context.Context, job *entities.Job) 
 	default:
 		job.Transaction.GasPrice = gasPrice.String()
 	}
-	
+
 	logger.WithField("value", job.Transaction.GasPrice).Debug("crafted gas price")
 	return nil
 }

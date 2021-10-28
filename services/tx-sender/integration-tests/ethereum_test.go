@@ -43,7 +43,6 @@ type txSenderEthereumTestSuite struct {
 
 func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 	signature := "0xd35c752d3498e6f5ca1630d264802a992a141ca4b6a3f439d673c75e944e5fb05278aaa5fabbeac362c321b54e298dedae2d31471e432c26ea36a8d49cf08f1e01"
-	raw := "0xf85380839896808252088083989680808216b4a0d35c752d3498e6f5ca1630d264802a992a141ca4b6a3f439d673c75e944e5fb0a05278aaa5fabbeac362c321b54e298dedae2d31471e432c26ea36a8d49cf08f1e"
 	txHash := "0x6621fbe1e2848446e38d99bfda159cdd83f555ae0ed7a4f3e1c3c79f7d6d74f3"
 
 	s.T().Run("should sign and send public ethereum transaction successfully", func(t *testing.T) {
@@ -58,7 +57,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).
-			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction", raw)).
+			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction")).
 			Reply(200).BodyString("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"" + txHash + "\"}")
 
 		gock.New(apiURL).
@@ -103,7 +102,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).
-			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction", raw)).
+			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction")).
 			Reply(200).BodyString("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"" + txHash + "\"}")
 
 		gock.New(apiURL).
@@ -157,7 +156,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).
-			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction", raw)).
+			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction")).
 			Reply(429).BodyString("")
 
 		gock.New(apiURL).
@@ -167,7 +166,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).
-			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction", raw)).
+			AddMatcher(ethCallMatcher(wg, "eth_sendRawTransaction")).
 			Reply(200).BodyString("{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"" + txHash + "\"}")
 
 		envelope.GasPrice = nil
@@ -354,7 +353,6 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 }
 
 func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
-	// signature := "0xd35c752d3498e6f5ca1630d264802a992a141ca4b6a3f439d673c75e944e5fb05278aaa5fabbeac362c321b54e298dedae2d31471e432c26ea36a8d49cf08f1e01"
 	raw := "0xf85380839896808252088083989680808216b4a0d35c752d3498e6f5ca1630d264802a992a141ca4b6a3f439d673c75e944e5fb0a05278aaa5fabbeac362c321b54e298dedae2d31471e432c26ea36a8d49cf08f1e"
 	txHash := "0x6621fbe1e2848446e38d99bfda159cdd83f555ae0ed7a4f3e1c3c79f7d6d74f3"
 
@@ -365,6 +363,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 		envelope := fakeEnvelope()
 		_ = envelope.SetJobType(tx.JobType_ETH_RAW_TX)
 		_ = envelope.SetRawString(raw)
+		_ = envelope.SetTxHashString(txHash)
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).
@@ -393,6 +392,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 		envelope := fakeEnvelope()
 		_ = envelope.SetJobType(tx.JobType_ETH_RAW_TX)
 		_ = envelope.SetRawString(raw)
+		_ = envelope.SetTxHashString(txHash)
 
 		gock.New(apiURL).
 			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
@@ -431,6 +431,7 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Raw_Public() {
 		envelope := fakeEnvelope()
 		_ = envelope.SetJobType(tx.JobType_ETH_RAW_TX)
 		_ = envelope.SetRawString(raw)
+		_ = envelope.SetTxHashString(txHash)
 
 		gock.New(apiURL).
 			Post(fmt.Sprintf("/%s", envelope.GetChainUUID())).

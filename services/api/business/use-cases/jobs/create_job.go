@@ -49,7 +49,7 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, tena
 	}
 	job.InternalData.ChainID = chainID
 
-	if job.Transaction.From != "" {
+	if job.Transaction.From != "" && job.Type != entities.EthereumRawTransaction {
 		err = uc.validateAccountExists(ctx, job.Transaction.From, tenants)
 		if err != nil {
 			logger.WithError(err).WithField("from", job.Transaction.From).Error("account does not exists")

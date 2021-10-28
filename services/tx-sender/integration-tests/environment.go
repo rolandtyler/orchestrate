@@ -79,7 +79,7 @@ func NewIntegrationEnvironment(ctx context.Context) (*IntegrationEnvironment, er
 		"--kafka-url=" + kafkaExternalHostname,
 		"--nonce-manager-type=" + txsender.NonceManagerTypeRedis,
 		"--api-url=" + apiURL,
-		"--log-level=panic",
+		"--log-level=warn",
 	}
 
 	err := flgs.Parse(args)
