@@ -6,7 +6,6 @@ import (
 	"context"
 	"os"
 	"testing"
-	"time"
 
 	integrationtest "github.com/ConsenSys/orchestrate/pkg/toolkit/integration-test"
 	"github.com/ConsenSys/orchestrate/pkg/utils"
@@ -58,15 +57,15 @@ func TestTxSender(t *testing.T) {
 	suite.Run(t, s)
 }
 
-func (s *txSenderTestSuite) TestTxSender_Ethereum() {
-	if s.err != nil {
-		s.env.logger.Warn("skipping test...")
-		return
-	}
-
-	testSuite := new(txSenderEthereumTestSuite)
-	testSuite.env = s.env
-
-	time.Sleep(3 * time.Second)
-	suite.Run(s.T(), testSuite)
-}
+// func (s *txSenderTestSuite) TestTxSender_Ethereum() {
+// 	if s.err != nil {
+// 		s.env.logger.Warn("skipping test...")
+// 		return
+// 	}
+// 
+// 	testSuite := new(txSenderEthereumTestSuite)
+// 	testSuite.env = s.env
+// 
+// 	time.Sleep(3 * time.Second)
+// 	suite.Run(s.T(), testSuite)
+// }

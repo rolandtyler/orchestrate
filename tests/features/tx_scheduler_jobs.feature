@@ -126,8 +126,7 @@ Feature: Transaction Scheduler Jobs
         "chainUUID": "{{chain.besu0.UUID}}",
         "type": "eth://ethereum/rawTransaction",
         "transaction": {
-          "raw": "{{rawTx.Raw}}",
-          "hash": "{{rawTx.TxHash}}"
+          "raw": "{{rawTx.Raw}}"
         }
       }
       """
@@ -151,5 +150,5 @@ Feature: Transaction Scheduler Jobs
     When I send "GET" request to "{{global.api}}/jobs/{{txTwoJobUUID}}"
     Then the response code should be 200
     And Response should have the following fields
-      | status | logs[0].status | logs[1].status | logs[2].status | logs[3].status |
+      | status | logs[0].status | logs[1].status | logs[2].status | logs[4].status |
       | MINED  | CREATED        | STARTED        | PENDING        | MINED          |
