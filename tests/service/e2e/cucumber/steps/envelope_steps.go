@@ -1,9 +1,14 @@
 package steps
 
 import (
+	"bytes"
 	"context"
+	json2 "encoding/json"
 	"fmt"
+	"github.com/go-kit/kit/transport/http/jsonrpc"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -243,11 +248,9 @@ func (sc *ScenarioContext) iHaveTheFollowingTenant(table *gherkin.PickleStepArgu
 			tenantID = uuid.Must(uuid.NewV4()).String()
 		}
 
-		if sc.jwtGenerator == nil {
-			sc.logger.Debug("jwt generator is not initialized (multi-tenancy mode disabled)")
-			tenantMap["token"] = ""
-		} else {
-			token, err := sc.jwtGenerator.GenerateAccessTokenWithTenantID(tenantID, []string{"*:*"}, 24*time.Hour)
+		tenantMap["token"] = ""
+		if sc.multitenancyEnabled {
+			token, err := sc.getJWT()
 			if err != nil {
 				return err
 			}
@@ -587,6 +590,43 @@ func (sc *ScenarioContext) craftAndSignEnvelope(ctx context.Context, e *tx.Envel
 
 	_ = e.SetRaw(signedRaw).SetTxHash(signedTx.Hash())
 	return nil
+}
+
+type accessTokenResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
+func (sc *ScenarioContext) getJWT(idpURL, clientID, clientSecret, audience string) (string, error) {
+	body := new(bytes.Buffer)
+	_ = json2.NewEncoder(body).Encode(map[string]interface{}{
+		"client_id":     clientID,
+		"client_secret": clientSecret,
+		"audience":      audience,
+		"grant_type":    "client_credentials",
+	})
+
+	resp, err := http.DefaultClient.Post(idpURL, jsonrpc.ContentType, body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	acessToken := &accessTokenResponse{}
+	if resp.StatusCode == http.StatusOK {
+		if err := json2.NewDecoder(resp.Body).Decode(acessToken); err != nil {
+			return "", err
+		}
+
+		return acessToken.AccessToken, nil
+	}
+
+	// Read body
+	respMsg, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return "", fmt.Errorf(string(respMsg))
 }
 
 func initEnvelopeSteps(s *godog.ScenarioContext, sc *ScenarioContext) {

@@ -1,12 +1,13 @@
 package steps
 
 import (
+	"github.com/consensys/orchestrate/pkg/toolkit/app/multitenancy"
+	"github.com/spf13/viper"
 	gohttp "net/http"
 
 	"github.com/Shopify/sarama"
 	broker "github.com/consensys/orchestrate/pkg/broker/sarama"
 	orchestrateclient "github.com/consensys/orchestrate/pkg/sdk/client"
-	"github.com/consensys/orchestrate/pkg/toolkit/app/auth/jwt/generator"
 	"github.com/consensys/orchestrate/pkg/toolkit/app/http"
 	"github.com/consensys/orchestrate/pkg/toolkit/app/log"
 	"github.com/consensys/orchestrate/pkg/toolkit/ethclient"
@@ -51,11 +52,11 @@ type ScenarioContext struct {
 
 	logger *log.Logger
 
-	jwtGenerator *generator.JWTGenerator
-
 	ec ethclient.Client
 
 	TearDownFunc []func()
+
+	multitenancyEnabled bool
 }
 
 func NewScenarioContext(
@@ -64,18 +65,18 @@ func NewScenarioContext(
 	client orchestrateclient.OrchestrateClient,
 	producer sarama.SyncProducer,
 	aliasesReg *alias.Registry,
-	jwtGenerator *generator.JWTGenerator,
 	ec ethclient.Client,
+	multitenancyEnabled bool,
 ) *ScenarioContext {
 	sc := &ScenarioContext{
-		chanReg:      chanReg,
-		httpClient:   httpClient,
-		aliases:      aliasesReg,
-		client:       client,
-		producer:     producer,
-		logger:       log.NewLogger().SetComponent("e2e.cucumber"),
-		jwtGenerator: jwtGenerator,
-		ec:           ec,
+		chanReg:             chanReg,
+		httpClient:          httpClient,
+		aliases:             aliasesReg,
+		client:              client,
+		producer:            producer,
+		logger:              log.NewLogger().SetComponent("e2e.cucumber"),
+		ec:                  ec,
+		multitenancyEnabled: multitenancyEnabled,
 	}
 
 	return sc
@@ -177,8 +178,8 @@ func InitializeScenario(s *godog.ScenarioContext) {
 		orchestrateclient.GlobalClient(),
 		broker.GlobalSyncProducer(),
 		alias.GlobalAliasRegistry(),
-		generator.GlobalJWTGenerator(),
 		rpcClient.GlobalClient(),
+		viper.GetBool(multitenancy.EnabledViperKey),
 	)
 
 	s.BeforeScenario(sc.init)
