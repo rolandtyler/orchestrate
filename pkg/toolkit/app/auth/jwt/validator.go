@@ -47,7 +47,12 @@ func (v *Validator) ValidateToken(ctx context.Context, token string) (*UserClaim
 		return nil, err
 	}
 
-	return &UserClaims{
-		TenantID: userCtx.(*josev2.UserContext).CustomClaims.(*CustomClaims).TenantID,
-	}, nil
+	// The tenant ID is the "sub" field, if the "tenant_id" custom field is specified, then tenant ID is "tenant_id"
+	tenantID := userCtx.(*josev2.UserContext).Claims.Subject
+	tenantIDCustomClaim := userCtx.(*josev2.UserContext).CustomClaims.(*CustomClaims).TenantID
+	if tenantIDCustomClaim != "" {
+		tenantID = tenantIDCustomClaim
+	}
+
+	return &UserClaims{TenantID: tenantID}, nil
 }

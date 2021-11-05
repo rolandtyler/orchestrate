@@ -2,11 +2,12 @@ package steps
 
 import (
 	"context"
-
 	"github.com/consensys/orchestrate/pkg/encoding/json"
 	authutils "github.com/consensys/orchestrate/pkg/toolkit/app/auth/utils"
 	"github.com/consensys/orchestrate/pkg/types/api"
+	utils2 "github.com/consensys/orchestrate/pkg/utils"
 	"github.com/consensys/orchestrate/tests/service/e2e/utils"
+	"github.com/consensys/quorum-key-manager/pkg/client"
 	"github.com/cucumber/godog"
 	gherkin "github.com/cucumber/messages-go/v10"
 	"github.com/traefik/traefik/v2/pkg/log"
@@ -29,8 +30,21 @@ func (sc *ScenarioContext) iRegisterTheFollowingContract(table *gherkin.PickleSt
 			return err
 		}
 
+		headers := map[string]string{}
+		if parseContract.APIKey != "" {
+			headers[authutils.APIKeyHeader] = parseContract.APIKey
+		}
+
+		if parseContract.Tenant != "" {
+			headers[utils2.TenantIDMetadata] = parseContract.Tenant
+		}
+
+		if parseContract.JWTToken != "" {
+			headers[utils2.AuthorizationMetadata] = parseContract.JWTToken
+		}
+
 		_, err = sc.client.RegisterContract(
-			authutils.WithAuthorization(ctx, parseContract.JWTToken),
+			context.WithValue(ctx, client.RequestHeaderKey, headers),
 			&api.RegisterContractRequest{
 				Name:             parseContract.Contract.Name,
 				Tag:              parseContract.Contract.Tag,

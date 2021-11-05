@@ -1,14 +1,10 @@
 package steps
 
 import (
-	"bytes"
 	"context"
-	json2 "encoding/json"
 	"fmt"
-	"github.com/go-kit/kit/transport/http/jsonrpc"
-	"io/ioutil"
+	"github.com/consensys/quorum-key-manager/pkg/client"
 	"math/rand"
-	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -248,15 +244,6 @@ func (sc *ScenarioContext) iHaveTheFollowingTenant(table *gherkin.PickleStepArgu
 			tenantID = uuid.Must(uuid.NewV4()).String()
 		}
 
-		tenantMap["token"] = ""
-		if sc.multitenancyEnabled {
-			token, err := sc.getJWT()
-			if err != nil {
-				return err
-			}
-			tenantMap["token"] = "Bearer " + token
-		}
-
 		tenantMap["tenantID"] = tenantID
 		sc.aliases.Set(tenantMap, sc.Pickle.Id, a)
 	}
@@ -295,7 +282,8 @@ func (sc *ScenarioContext) iHaveTheFollowingAccount(table *gherkin.PickleStepArg
 }
 
 func (sc *ScenarioContext) iHaveCreatedTheFollowingAccounts(table *gherkin.PickleStepArgument_PickleTable) error {
-	tokenCol := utils.ExtractColumns(table, []string{"Headers.Authorization"})
+	tenantCol := utils.ExtractColumns(table, []string{"Tenant"})
+	apiKeyCol := utils.ExtractColumns(table, []string{"API-KEY"})
 	accIDCol := utils.ExtractColumns(table, []string{"ID"})
 	accChainCol := utils.ExtractColumns(table, []string{"ChainName"})
 	aliasCol := utils.ExtractColumns(table, []string{aliasHeaderValue})
@@ -303,11 +291,17 @@ func (sc *ScenarioContext) iHaveCreatedTheFollowingAccounts(table *gherkin.Pickl
 		return errors.DataError("alias column is mandatory")
 	}
 
-	for idx := range tokenCol.Rows[1:] {
+	for idx := range apiKeyCol.Rows[1:] {
 		ctx := context.Background()
-		token := tokenCol.Rows[idx+1].Cells[0].Value
-		if token != "" {
-			ctx = authutils.WithAuthorization(ctx, token)
+		apiKey := apiKeyCol.Rows[idx+1].Cells[0].Value
+
+		headers := map[string]string{}
+		if apiKey != "" {
+			headers[authutils.APIKeyHeader] = apiKey
+		}
+
+		if tenantCol != nil {
+			headers[utils4.TenantIDMetadata] = tenantCol.Rows[idx+1].Cells[0].Value
 		}
 
 		req := &api.CreateAccountRequest{}
@@ -320,7 +314,7 @@ func (sc *ScenarioContext) iHaveCreatedTheFollowingAccounts(table *gherkin.Pickl
 			req.Chain = accChainCol.Rows[idx+1].Cells[0].Value
 		}
 
-		accRes, err := sc.client.CreateAccount(ctx, req)
+		accRes, err := sc.client.CreateAccount(context.WithValue(ctx, client.RequestHeaderKey, headers), req)
 
 		if err != nil {
 			return err
@@ -590,43 +584,6 @@ func (sc *ScenarioContext) craftAndSignEnvelope(ctx context.Context, e *tx.Envel
 
 	_ = e.SetRaw(signedRaw).SetTxHash(signedTx.Hash())
 	return nil
-}
-
-type accessTokenResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
-func (sc *ScenarioContext) getJWT(idpURL, clientID, clientSecret, audience string) (string, error) {
-	body := new(bytes.Buffer)
-	_ = json2.NewEncoder(body).Encode(map[string]interface{}{
-		"client_id":     clientID,
-		"client_secret": clientSecret,
-		"audience":      audience,
-		"grant_type":    "client_credentials",
-	})
-
-	resp, err := http.DefaultClient.Post(idpURL, jsonrpc.ContentType, body)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	acessToken := &accessTokenResponse{}
-	if resp.StatusCode == http.StatusOK {
-		if err := json2.NewDecoder(resp.Body).Decode(acessToken); err != nil {
-			return "", err
-		}
-
-		return acessToken.AccessToken, nil
-	}
-
-	// Read body
-	respMsg, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return "", fmt.Errorf(string(respMsg))
 }
 
 func initEnvelopeSteps(s *godog.ScenarioContext, sc *ScenarioContext) {
