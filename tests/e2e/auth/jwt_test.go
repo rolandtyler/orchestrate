@@ -41,7 +41,7 @@ func (s *authTestSuite) TestJWT() {
 		require.True(s.T(), errors.IsUnauthorizedError(err))
 	})
 
-	// TODO: Delete accounts, currently not implemented
+	// TODO: Delete resources, currently not implemented
 }
 
 type accessTokenResponse struct {

@@ -73,5 +73,5 @@ func (s *authTestSuite) TestAPIKEY() {
 		assert.True(s.T(), errors.IsUnauthorizedError(err))
 	})
 
-	// TODO: Delete accounts, currently not implemented
+	// TODO: Delete resources, currently not implemented
 }
