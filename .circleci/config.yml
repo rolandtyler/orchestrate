@@ -367,9 +367,6 @@ jobs:
             docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
             docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG}
 
-            docker tag ${DOCKER_REGISTRY_REPO_2}/orchestrate:${CIRCLE_TAG} ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
-            docker push ${DOCKER_REGISTRY_REPO_2}/orchestrate:latest
-
   deploy-staging:
     docker:
       - image: cimg/base:2020.01
