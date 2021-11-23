@@ -79,7 +79,7 @@ func NewIntegrationEnvironment(ctx context.Context) (*IntegrationEnvironment, er
 		"--rest-port=" + envHTTPPort,
 		"--vault-addr=http://" + host + ":" + envVaultHostPort,
 		"--vault-token-file=" + tokenFileName,
-		"--log-level=panic",
+		"--log-level=warn",
 	}
 
 	err = flgs.Parse(args)

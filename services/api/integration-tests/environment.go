@@ -89,7 +89,7 @@ func NewIntegrationEnvironment(ctx context.Context) (*IntegrationEnvironment, er
 		"--rest-port=" + envHTTPPort,
 		"--db-port=" + envPGHostPort,
 		"--kafka-url=" + kafkaExternalHostname,
-		"--log-level=panic",
+		"--log-level=warn",
 	}
 
 	err := flgs.Parse(args)

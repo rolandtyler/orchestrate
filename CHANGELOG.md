@@ -1,5 +1,11 @@
 # Orchestrate Release Notes
 
+## v21.1.11 (2021-11-23)
+
+### 🛠 Bug fixes
+* Tx-sender exits updating jobs already in final status
+* Tx-sender does not send message on `tx-recover` topic when there are persistent connectivity issues with RPC nodes
+
 ## v21.1.10 (2021-10-28)
 
 ### 🛠 Bug fixes

@@ -252,6 +252,54 @@ func (s *txSenderEthereumTestSuite) TestTxSender_Ethereum_Public() {
 		assert.NotEmpty(t, retrievedEnvelope.GetErrors()[0].Code)
 		assert.NotEmpty(t, retrievedEnvelope.GetErrors()[0].Message)
 	})
+	
+		s.T().Run("should send envelope to tx-recover and don't retry if key-manager fails to sign and to update status to FAILED", func(t *testing.T) {
+		defer gock.Off()
+		wg := &multierror.Group{}
+
+		envelope := fakeEnvelope()
+
+		url := fmt.Sprintf("/ethereum/accounts/%s/sign-transaction", envelope.GetFromString())
+		gock.New(keyManagerURL).Post(url).Reply(http2.StatusUnauthorized).Status(http2.StatusUnprocessableEntity).
+			JSON(httputil.ErrorResponse{
+				Message: "not authorized requests",
+				Code:    666,
+			})
+
+		gock.New(apiURL).
+			Patch(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
+			AddMatcher(txStatusUpdateMatcher(wg, entities.StatusFailed, "", "")).
+			Reply(http2.StatusUnprocessableEntity).JSON(httputil.ErrorResponse{
+			Message: "job status is already final",
+			Code:    666,
+		})
+
+		gock.New(apiURL).
+			Get(fmt.Sprintf("/jobs/%s", envelope.GetJobUUID())).
+			Reply(http2.StatusOK).JSON(&api.JobResponse{
+			Status: entities.StatusMined,
+		})
+
+		err := s.sendEnvelope(envelope.TxEnvelopeAsRequest())
+		if err != nil {
+			assert.Fail(t, err.Error())
+			return
+		}
+
+		retrievedEnvelope, err := s.env.consumer.WaitForEnvelope(envelope.GetID(), s.env.srvConfig.RecoverTopic,
+			waitForEnvelopeTimeOut)
+		if err != nil {
+			assert.Fail(t, err.Error())
+			return
+		}
+
+		err = waitTimeout(wg, time.Second*2)
+		assert.NoError(t, err)
+
+		assert.Equal(t, envelope.GetID(), retrievedEnvelope.GetID())
+		assert.NotEmpty(t, retrievedEnvelope.GetErrors()[0].Code)
+		assert.NotEmpty(t, retrievedEnvelope.GetErrors()[0].Message)
+	})
 
 	s.T().Run("should send envelope to tx-recover if transaction-scheduler fails to update", func(t *testing.T) {
 		defer gock.Off()
