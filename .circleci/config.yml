@@ -258,6 +258,7 @@ jobs:
   run-e2e-local:
     machine:
       image: ubuntu-2004:202010-01
+      docker_layer_caching: true    
     resource_class: xlarge
     steps:
       - run:
@@ -269,12 +270,17 @@ jobs:
       - run:
           name: e2e local tests
           command: |
-            set +e
+            set -e
             cp .env.multitenancy .env
             make up
             echo "Wait 20 seconds for services to boot up correctly..."
             sleep 20
             make e2e-ci
+            exitCode=$(echo $?)
+            exit $exitCode
+      - store_artifacts:
+          path: ./build/report/report.html
+          destination: report.html
 
   run-e2e:
     docker:
