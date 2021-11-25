@@ -225,22 +225,22 @@ jobs:
             docker tag orchestrate:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:develop
             docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate:develop
 
-#  push-orchestrate-e2e-image:
-#    docker:
-#      - image: cimg/base:2020.01
-#    resource_class: large
-#    steps:
-#      - checkout
-#      - setup_remote_docker:
-#          version: 19.03.13
-#          docker_layer_caching: true
-#      - prepare_docker
-#      - docker_build_e2e_dev
-#      - run:
-#          name: Deploy e2e image in dev repository
-#          command: |
-#            docker tag orchestrate-e2e:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
-#            docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
+  push-orchestrate-e2e-image:
+    docker:
+      - image: cimg/base:2020.01
+    resource_class: large
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - prepare_docker
+      - docker_build_e2e_dev
+      - run:
+          name: Deploy e2e image in dev repository
+          command: |
+            docker tag orchestrate-e2e:${CIRCLE_SHA1:0:7} ${DOCKER_REGISTRY_REPO_2}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
+            docker push ${DOCKER_REGISTRY_DEV_REPO}/orchestrate-e2e:${CIRCLE_SHA1:0:7}
 
   deploy-qa:
     docker:
@@ -454,18 +454,16 @@ workflows:
               ignore: /.*/
           requires:
             - wait-for-approval
-#      - push-orchestrate-e2e-image:
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^v.*/
-#          requires:
-#            - lint
-#            - gobuild
-#            - test
-#            - race
-#            - integration
+      - push-orchestrate-e2e-image:
+          filters:
+            branches:
+              only: /.*/
+          requires:
+            - lint
+            - gobuild
+            - test
+            - race
+            - integration
 #      - deploy-qa:
 #          filters:
 #            branches:
