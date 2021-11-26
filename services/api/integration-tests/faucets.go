@@ -10,7 +10,7 @@ import (
 	"github.com/consensys/orchestrate/pkg/sdk/client"
 	"github.com/consensys/orchestrate/pkg/types/api"
 	"github.com/consensys/orchestrate/pkg/types/entities"
-	"github.com/consensys/quorum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
 

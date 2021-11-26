@@ -4,6 +4,7 @@ import (
 	"github.com/consensys/orchestrate/pkg/types/entities"
 	"github.com/consensys/orchestrate/pkg/utils"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -14,11 +15,11 @@ type DeployContractRequest struct {
 }
 
 type DeployContractParams struct {
-	Value           string                        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	Gas             string                        `json:"gas,omitempty" example:"21000"`
-	GasPrice        string                        `json:"gasPrice,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
-	GasFeeCap       string                        `json:"maxFeePerGas,omitempty" example:"71500000 (wei)"`
-	GasTipCap       string                        `json:"maxPriorityFeePerGas,omitempty" example:"71500000 (wei)"`
+	Value           *hexutil.Big                  `json:"value,omitempty" validate:"omitempty" example:"0x59682f00" swaggertype:"string"`
+	Gas             *hexutil.Uint64               `json:"gas,omitempty" example:"0x5208" swaggertype:"string"`
+	GasPrice        *hexutil.Big                  `json:"gasPrice,omitempty" validate:"omitempty" example:"0x5208" swaggertype:"string"`
+	GasFeeCap       *hexutil.Big                  `json:"maxFeePerGas,omitempty" example:"0x4c4b40" swaggertype:"string"`
+	GasTipCap       *hexutil.Big                  `json:"maxPriorityFeePerGas,omitempty" example:"0x59682f00" swaggertype:"string"`
 	AccessList      types.AccessList              `json:"accessList,omitempty" swaggertype:"array,object"`
 	TransactionType string                        `json:"transactionType,omitempty" validate:"omitempty,isTransactionType" example:"dynamic_fee" enums:"legacy,dynamic_fee"`
 	From            *ethcommon.Address            `json:"from" validate:"omitempty" example:"0x1abae27a0cbfb02945720425d3b80c7e09728534" swaggertype:"string"`
@@ -28,9 +29,9 @@ type DeployContractParams struct {
 	OneTimeKey      bool                          `json:"oneTimeKey,omitempty" example:"true"`
 	GasPricePolicy  GasPriceParams                `json:"gasPricePolicy,omitempty"`
 	Protocol        entities.PrivateTxManagerType `json:"protocol,omitempty" validate:"omitempty,isPrivateTxManagerType" example:"Tessera"`
-	PrivateFrom     string                        `json:"privateFrom,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
-	PrivateFor      []string                      `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
-	MandatoryFor    []string                      `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
+	PrivateFrom     []byte                        `json:"privateFrom,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=" swaggertype:"string"`
+	PrivateFor      [][]byte                      `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]" swaggertype:"[]string"`
+	MandatoryFor    [][]byte                      `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]" swaggertype:"[]string"`
 	PrivacyGroupID  string                        `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 	PrivacyFlag     int                           `json:"privacyFlag,omitempty" validate:"omitempty,isPrivacyFlag" example:"0"`
 }

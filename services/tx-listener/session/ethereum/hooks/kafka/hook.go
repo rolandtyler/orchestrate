@@ -12,7 +12,7 @@ import (
 	"github.com/consensys/orchestrate/pkg/types/entities"
 	"github.com/consensys/orchestrate/pkg/utils"
 	"github.com/consensys/orchestrate/pkg/utils/envelope"
-	"github.com/consensys/quorum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/Shopify/sarama"
 	encoding "github.com/consensys/orchestrate/pkg/encoding/sarama"

@@ -267,8 +267,8 @@ type Tx struct {
 	TransactionType string
 	Value           *big.Int
 	Nonce           *uint64
-	Data            string          `validate:"omitempty,isHex"`
-	Raw             string          `validate:"omitempty,isHex,required_with_all=TxHash"`
+	Data            *hexutil.Bytes  `validate:"omitempty"`
+	Raw             *hexutil.Bytes  `validate:"omitempty,required_with_all=TxHash"`
 	TxHash          *ethcommon.Hash `validate:"omitempty,required_with_all=Raw"`
 }
 

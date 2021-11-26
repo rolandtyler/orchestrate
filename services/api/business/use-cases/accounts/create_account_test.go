@@ -14,7 +14,7 @@ import (
 	mocks2 "github.com/consensys/orchestrate/services/api/business/use-cases/mocks"
 	"github.com/consensys/orchestrate/services/api/store/mocks"
 	qkmtypes "github.com/consensys/quorum-key-manager/src/stores/api/types"
-	"github.com/consensys/quorum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 

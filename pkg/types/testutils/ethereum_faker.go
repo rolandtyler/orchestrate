@@ -67,15 +67,6 @@ func FakeETHAccount() *entities.ETHAccount {
 	}
 }
 
-func FakeZKSAccount() *entities.ZKSAccount {
-	return &entities.ZKSAccount{
-		Namespace:        "_",
-		PublicKey:        ethcommon.HexToHash(utils.RandHexString(12)).String(),
-		Curve:            entities.ZKSCurveBN254,
-		SigningAlgorithm: entities.ZKSAlgorithmEDDSA,
-	}
-}
-
 func FakeTesseraTransactionParams() *entities.ETHTransactionParams {
 	tx := FakeETHTransactionParams()
 	tx.PrivateFrom = "ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc="

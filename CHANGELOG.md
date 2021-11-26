@@ -13,6 +13,7 @@ able to impersonate same tenants.
 
 ### ⚠ BREAKING CHANGES
 * In case of empty Orchestrate custom claims, token subject `sub` is used as `tenant_id:username`.
+* Command `migration init` is merged into `migration up`.
 
 ## v21.10.0 alpha.2 (2021-11-21)
 ### 🆕 Features
@@ -32,10 +33,7 @@ able to impersonate same tenants.
 
 ### ⚠ BREAKING CHANGES
 * Removed endpoints `/accounts/{address}/sign` and `/accounts/{address}/verify-signature` in favor of `/accounts/{address}/sign-message` and `/accounts/verify-message` accordingly to EIP-191 standards
-
-### 🛠 Bug fixes
-* Incorrect server name verification using Postgres in `verify-ca` mode 
-* Tx-sender exits sending Tessera private transaction with invalid 'from'
+* Removed support of zk-snarks account in favor of Quorum Key Manager implementation
 
 ## v21.1.11 (2021-11-23)
 
