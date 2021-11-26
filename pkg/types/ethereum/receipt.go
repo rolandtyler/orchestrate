@@ -70,17 +70,17 @@ func (r *Receipt) GetTxHashPtr() *ethcommon.Hash {
 // UnmarshalJSON unmarshal from JSON.
 func (r *Receipt) UnmarshalJSON(input []byte) error {
 	var dec struct {
-		PostState         *hexutil.Bytes     `json:"root"`
-		Status            *hexutil.Uint64    `json:"status"`
-		CumulativeGasUsed *hexutil.Uint64    `json:"cumulativeGasUsed" gencodec:"required"`
+		PostState         hexutil.Bytes     `json:"root"`
+		Status            hexutil.Uint64    `json:"status"`
+		CumulativeGasUsed hexutil.Uint64    `json:"cumulativeGasUsed" gencodec:"required"`
 		EffectiveGasPrice string             `json:"effectiveGasPrice,omitempty"`
 		Bloom             *ethtypes.Bloom    `json:"logsBloom"         gencodec:"required"`
 		Logs              []*ethtypes.Log    `json:"logs"              gencodec:"required"`
 		TxHash            *ethcommon.Hash    `json:"transactionHash" gencodec:"required"`
 		ContractAddress   *ethcommon.Address `json:"contractAddress"`
-		GasUsed           *hexutil.Uint64    `json:"gasUsed" gencodec:"required"`
+		GasUsed           hexutil.Uint64    `json:"gasUsed" gencodec:"required"`
 		BlockHash         *ethcommon.Hash    `json:"blockHash,omitempty"`
-		BlockNumber       *hexutil.Big       `json:"blockNumber,omitempty"`
+		BlockNumber       hexutil.Big       `json:"blockNumber,omitempty"`
 		TransactionIndex  *hexutil.Uint      `json:"transactionIndex"`
 		RevertReason      string             `json:"revertReason"`
 	}

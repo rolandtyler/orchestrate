@@ -242,16 +242,16 @@ func TestHeaderByNumber(t *testing.T) {
 
 type transactionResp struct {
 	Nonce    hexutil.Uint64     `json:"nonce"    gencodec:"required"`
-	GasPrice *hexutil.Big       `json:"gasPrice" gencodec:"required"`
+	GasPrice hexutil.Big       `json:"gasPrice" gencodec:"required"`
 	Gas      hexutil.Uint64     `json:"gas"      gencodec:"required"`
 	To       *ethcommon.Address `json:"to"       rlp:"nil"` // nil means contract creation
-	Value    *hexutil.Big       `json:"value"    gencodec:"required"`
+	Value    hexutil.Big       `json:"value"    gencodec:"required"`
 	Data     hexutil.Bytes      `json:"input"    gencodec:"required"`
 
 	// Signature values
-	V *hexutil.Big `json:"v" gencodec:"required"`
-	R *hexutil.Big `json:"r" gencodec:"required"`
-	S *hexutil.Big `json:"s" gencodec:"required"`
+	V hexutil.Big `json:"v" gencodec:"required"`
+	R hexutil.Big `json:"r" gencodec:"required"`
+	S hexutil.Big `json:"s" gencodec:"required"`
 
 	// This is only used when marshaling to JSON.
 	Hash        *ethcommon.Hash `json:"hash" rlp:"-"`
@@ -262,18 +262,18 @@ func newTxResp(tx *ethtypes.Transaction, blockNumber string) *transactionResp {
 	hash := tx.Hash()
 	resp := &transactionResp{
 		Nonce:    hexutil.Uint64(tx.Nonce()),
-		GasPrice: (*hexutil.Big)(tx.GasPrice()),
+		GasPrice: (hexutil.Big)(tx.GasPrice()),
 		Gas:      hexutil.Uint64(tx.Gas()),
 		To:       tx.To(),
-		Value:    (*hexutil.Big)(tx.Value()),
+		Value:    (hexutil.Big)(tx.Value()),
 		Data:     tx.Data(),
 		Hash:     &hash,
 	}
 
 	v, r, s := tx.RawSignatureValues()
-	resp.V = (*hexutil.Big)(v)
-	resp.R = (*hexutil.Big)(r)
-	resp.S = (*hexutil.Big)(s)
+	resp.V = (hexutil.Big)(v)
+	resp.R = (hexutil.Big)(r)
+	resp.S = (hexutil.Big)(s)
 
 	if blockNumber != "" {
 		resp.BlockNumber = &blockNumber
@@ -401,7 +401,7 @@ func TestBalanceAt(t *testing.T) {
 
 	// Test 2 without error
 	expectedBalance := big.NewInt(1000)
-	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((*hexutil.Big)(expectedBalance), ""))
+	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((hexutil.Big)(expectedBalance), ""))
 	balance, err := ec.BalanceAt(ctx, "test-endpoint", ethcommon.Address{}, nil)
 	assert.NoError(t, err, "#3 BalanceAt should not error")
 	assert.Equal(t, expectedBalance.Text(10), balance.Text(10), "#3 BalanceAt balance should be correct")
@@ -465,7 +465,7 @@ func TestPendingBalanceAt(t *testing.T) {
 
 	// Test 2 without error
 	expectedBalance := big.NewInt(1000)
-	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((*hexutil.Big)(expectedBalance), ""))
+	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((hexutil.Big)(expectedBalance), ""))
 	balance, err := ec.PendingBalanceAt(ctx, "test-endpoint", ethcommon.Address{})
 	assert.NoError(t, err, "#3 TestPendingBalanceAt should not error")
 	assert.Equal(t, expectedBalance.Text(10), balance.Text(10), "#3 TestPendingBalanceAt balance should be correct")
@@ -561,7 +561,7 @@ func TestSuggestGasPrice(t *testing.T) {
 
 	// Test 2 without error
 	expectedPrice := big.NewInt(1000)
-	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((*hexutil.Big)(expectedPrice), ""))
+	ctx = testutils.NewContext(nil, 200, testutils.MakeRespBody((hexutil.Big)(expectedPrice), ""))
 	price, err := ec.SuggestGasPrice(ctx, "test-endpoint")
 	assert.NoError(t, err, "#3 SuggestGasPrice should not error")
 	assert.Equal(t, expectedPrice.Text(10), price.Text(10), "#3 SuggestGasPrice balance should be correct")

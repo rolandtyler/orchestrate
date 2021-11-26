@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/go-kit/kit/transport/http/jsonrpc"
 
 	clientutils "github.com/consensys/orchestrate/pkg/toolkit/app/http/client-utils"
@@ -657,7 +658,7 @@ func (sc *ScenarioContext) craftAndSignEnvelope(ctx context.Context, e *tx.Envel
 		_ = e.SetChainID(chainID)
 	}
 
-	signer := pkgcryto.GetEIP155Signer(e.GetChainIDString())
+	signer := types.NewEIP155Signer(e.GetChainID())
 	acc, err := crypto.HexToECDSA(privKey)
 	if err != nil {
 		log.WithError(err).WithField("private_key", privKey).Error("failed to create account using private key")

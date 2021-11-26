@@ -36,18 +36,15 @@ type ETHTransaction struct {
 	GasTipCap       *hexutil.Big       `json:"maxPriorityFeePerGas,omitempty" example:"0x59682f00" swaggertype:"string"`
 	AccessList      types.AccessList   `json:"accessList,omitempty" swaggertype:"array,object"`
 	TransactionType TransactionType    `json:"transactionType,omitempty" example:"dynamic_fee" enums:"legacy,dynamic_fee"`
-	Data            *hexutil.Bytes     `json:"data,omitempty" validate:"omitempty" example:"0xfe378324abcde723" swaggertype:"string"`
-	Raw             *hexutil.Bytes     `json:"raw,omitempty" validate:"omitempty" example:"0xfe378324abcde723" swaggertype:"string"`
+	Data            hexutil.Bytes     `json:"data,omitempty" validate:"omitempty" example:"0xfe378324abcde723" swaggertype:"string"`
+	Raw             hexutil.Bytes     `json:"raw,omitempty" validate:"omitempty" example:"0xfe378324abcde723" swaggertype:"string"`
 	PrivateFrom     []byte             `json:"privateFrom,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 	PrivateFor      [][]byte           `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
 	MandatoryFor    [][]byte           `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
 	PrivacyGroupID  []byte             `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 	PrivacyFlag     PrivacyFlag        `json:"privacyFlag,omitempty" validate:"omitempty,isPrivacyFlag" example:"1"`
-	EnclaveKey      *hexutil.Bytes     `json:"enclaveKey,omitempty" example:"0xd41551c714c8ec769d2edad9adc250ae955d263da161bf59142b7500eea6715eadc250ae955d263da161bf59142b7500eea6715e" swaggertype:"string"`
+	EnclaveKey      hexutil.Bytes     `json:"enclaveKey,omitempty" example:"0xd41551c714c8ec769d2edad9adc250ae955d263da161bf59142b7500eea6715eadc250ae955d263da161bf59142b7500eea6715e" swaggertype:"string"`
 	CreatedAt       time.Time          `json:"createdAt,omitempty" example:"2020-07-09T12:35:42.115395Z"`
 	UpdatedAt       time.Time          `json:"updatedAt,omitempty" example:"2020-07-09T12:35:42.115395Z"`
 }
 
-func (t *ETHTransaction) GetHash() ethcommon.Hash {
-	return ethcommon.HexToHash(t.Hash)
-}

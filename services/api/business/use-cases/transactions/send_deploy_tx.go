@@ -61,12 +61,6 @@ func (uc *sendDeployTxUsecase) computeTxData(ctx context.Context, params *entiti
 		return "", errors.FromError(err)
 	}
 
-	// Craft bytecode
-	bytecode, err := hexutil.Decode(contract.Bytecode)
-	if err != nil {
-		return "", errors.EncodingError("failed to decode bytecode")
-	}
-
 	// Craft constructor method signature
 	constructorSignature := fmt.Sprintf("constructor%s", contract.Constructor.Signature)
 	crafter := abi.BaseCrafter{}
@@ -75,7 +69,7 @@ func (uc *sendDeployTxUsecase) computeTxData(ctx context.Context, params *entiti
 		return "", errors.DataCorruptedError("failed to parse constructor method arguments")
 	}
 
-	txDataBytes, err := crafter.CraftConstructor(bytecode, constructorSignature, args...)
+	txDataBytes, err := crafter.CraftConstructor(contract.Bytecode, constructorSignature, args...)
 	if err != nil {
 		return "", errors.InvalidParameterError("invalid arguments for constructor method signature")
 	}

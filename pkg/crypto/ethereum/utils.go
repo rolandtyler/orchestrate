@@ -2,13 +2,11 @@ package ethereum
 
 import (
 	"encoding/base64"
-	"math/big"
 
 	"github.com/consensys/orchestrate/pkg/errors"
 	quorumtypes "github.com/consensys/quorum/core/types"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -32,8 +30,8 @@ func GetSignatureSender(signature, payload string) (*ethcommon.Address, error) {
 	return &address, nil
 }
 
-func GetEncodedPrivateFrom(privateFrom string) ([]byte, error) {
-	privateFromEncoded, err := base64.StdEncoding.DecodeString(privateFrom)
+func GetEncodedPrivateFrom(privateFrom []byte) ([]byte, error) {
+	privateFromEncoded, err := base64.StdEncoding.DecodeString(string(privateFrom))
 	if err != nil {
 		return nil, errors.EncodingError("invalid base64 value for 'privateFrom'").AppendReason(err.Error())
 	}
@@ -41,18 +39,18 @@ func GetEncodedPrivateFrom(privateFrom string) ([]byte, error) {
 	return privateFromEncoded, nil
 }
 
-func GetEncodedPrivateRecipient(privacyGroupID string, privateFor []string) (interface{}, error) {
+func GetEncodedPrivateRecipient(privacyGroupID []byte, privateFor [][]byte) (interface{}, error) {
 	var privateRecipientEncoded interface{}
 	var err error
-	if privacyGroupID != "" {
-		privateRecipientEncoded, err = base64.StdEncoding.DecodeString(privacyGroupID)
+	if privacyGroupID != nil {
+		privateRecipientEncoded, err = base64.StdEncoding.DecodeString(string(privacyGroupID))
 		if err != nil {
 			return nil, errors.EncodingError("invalid base64 value for 'privacyGroupId'").AppendReason(err.Error())
 		}
 	} else {
 		var privateForByteSlice [][]byte
 		for _, v := range privateFor {
-			b, der := base64.StdEncoding.DecodeString(v)
+			b, der := base64.StdEncoding.DecodeString(string(v))
 			if der != nil {
 				return nil, errors.EncodingError("invalid base64 value for 'privateFor'").AppendReason(der.Error())
 			}
@@ -62,12 +60,6 @@ func GetEncodedPrivateRecipient(privacyGroupID string, privateFor []string) (int
 	}
 
 	return privateRecipientEncoded, nil
-}
-
-func GetEIP155Signer(chainID string) types.Signer {
-	chainIDBigInt := new(big.Int)
-	chainIDBigInt, _ = chainIDBigInt.SetString(chainID, 10)
-	return types.NewEIP155Signer(chainIDBigInt)
 }
 
 func GetQuorumPrivateTxSigner() quorumtypes.Signer {

@@ -267,8 +267,8 @@ type Tx struct {
 	TransactionType string
 	Value           *big.Int
 	Nonce           *uint64
-	Data            *hexutil.Bytes  `validate:"omitempty"`
-	Raw             *hexutil.Bytes  `validate:"omitempty,required_with_all=TxHash"`
+	Data            hexutil.Bytes  `validate:"omitempty"`
+	Raw             hexutil.Bytes  `validate:"omitempty,required_with_all=TxHash"`
 	TxHash          *ethcommon.Hash `validate:"omitempty,required_with_all=Raw"`
 }
 
@@ -640,70 +640,62 @@ func (e *Envelope) SetValue(value *big.Int) *Envelope {
 // DATA
 
 func (e *Envelope) GetData() string {
-	return e.Data
+	return e.Data.String()
 }
 
 func (e *Envelope) MustGetDataBytes() []byte {
-	if e.Data == "" {
-		return []byte{}
-	}
-	data, _ := hexutil.Decode(e.Data)
-	return data
+	return e.Data
 }
 
 func (e *Envelope) SetData(data []byte) *Envelope {
-	e.Data = hexutil.Encode(data)
+	e.Data = data
 	return e
 }
 
 func (e *Envelope) SetDataString(data string) error {
-	_, err := hexutil.Decode(data)
+	var err error
+	e.Data, err = hexutil.Decode(data)
 	if err != nil {
 		return errors.DataError("invalid data")
 	}
-	e.Data = data
 	return nil
 }
 
 func (e *Envelope) MustSetDataString(data string) *Envelope {
-	e.Data = data
+	e.Data = hexutil.MustDecode(data)
 	return e
 }
 
 // RAW
 
 func (e *Envelope) GetShortRaw() string {
-	return utils.ShortString(e.Raw, 30)
+	return utils.ShortString(e.Raw.String(), 30)
 }
 
 func (e *Envelope) GetRaw() string {
-	return e.Raw
+	return e.Raw.String()
 }
 
 func (e *Envelope) MustGetRawBytes() []byte {
-	if e.Raw == "" {
-		return []byte{}
-	}
-	raw, _ := hexutil.Decode(e.Raw)
-	return raw
+	return e.Raw
 }
 
 func (e *Envelope) SetRaw(raw []byte) *Envelope {
-	e.Raw = hexutil.Encode(raw)
+	e.Raw = raw
 	return e
 }
 
 func (e *Envelope) SetRawString(raw string) error {
-	_, err := hexutil.Decode(raw)
+	var err error
+	e.Raw, err = hexutil.Decode(raw)
 	if err != nil {
 		return errors.DataError("invalid raw")
 	}
-	e.Raw = raw
 	return nil
 }
 
 func (e *Envelope) MustSetRawString(raw string) *Envelope {
-	e.Raw = raw
+	e.Raw = hexutil.MustDecode(raw)
 	return e
 }
 

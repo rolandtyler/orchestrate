@@ -67,7 +67,7 @@ func (uc *fundAccountUseCase) Execute(ctx context.Context, account *entities.Acc
 		Params: &entities.ETHTransactionParams{
 			From:  &faucet.CreditorAccount,
 			To:    &account.Address,
-			Value: faucet.Amount,
+			Value: &faucet.Amount,
 		},
 		Labels: map[string]string{
 			"faucetUUID": faucet.UUID,

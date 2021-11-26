@@ -2,10 +2,12 @@ package jobs
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/consensys/orchestrate/pkg/toolkit/app/multitenancy"
 	"github.com/consensys/orchestrate/pkg/types/entities"
 	usecases "github.com/consensys/orchestrate/services/api/business/use-cases"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 
 	"github.com/consensys/orchestrate/pkg/errors"
 	"github.com/consensys/orchestrate/pkg/toolkit/app/log"
@@ -50,7 +52,7 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, user
 	}
 	job.InternalData.ChainID = chainID
 
-	if job.Transaction.From != "" && job.Type != entities.EthereumRawTransaction {
+	if job.Transaction.From != nil && job.Type != entities.EthereumRawTransaction {
 		err = uc.validateAccountAccess(ctx, job.Transaction.From, userInfo)
 		if err != nil {
 			return nil, errors.FromError(err).ExtendComponent(createJobComponent)
@@ -118,8 +120,8 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, user
 	return parsers.NewJobEntityFromModels(jobModel), nil
 }
 
-func (uc *createJobUseCase) validateAccountAccess(ctx context.Context, address string, userInfo *multitenancy.UserInfo) error {
-	_, err := uc.db.Account().FindOneByAddress(ctx, address, userInfo.AllowedTenants, userInfo.Username)
+func (uc *createJobUseCase) validateAccountAccess(ctx context.Context, address *ethcommon.Address, userInfo *multitenancy.UserInfo) error {
+	_, err := uc.db.Account().FindOneByAddress(ctx, address.String(), userInfo.AllowedTenants, userInfo.Username)
 	if errors.IsNotFoundError(err) {
 		return errors.InvalidParameterError("failed to get account")
 	}
@@ -130,14 +132,14 @@ func (uc *createJobUseCase) validateAccountAccess(ctx context.Context, address s
 	return nil
 }
 
-func (uc *createJobUseCase) getChainID(ctx context.Context, chainUUID string, userInfo *multitenancy.UserInfo) (string, error) {
+func (uc *createJobUseCase) getChainID(ctx context.Context, chainUUID string, userInfo *multitenancy.UserInfo) (*big.Int, error) {
 	chain, err := uc.getChainUC.Execute(ctx, chainUUID, userInfo)
 	if errors.IsNotFoundError(err) {
-		return "", errors.InvalidParameterError("failed to get chain")
+		return nil, errors.InvalidParameterError("failed to get chain")
 	}
 	if err != nil {
-		return "", errors.FromError(err)
+		return nil, errors.FromError(err)
 	}
 
-	return chain.ChainID, nil
+	return &chain.ChainID, nil
 }

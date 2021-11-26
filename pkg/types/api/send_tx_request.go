@@ -17,7 +17,7 @@ type SendTransactionRequest struct {
 // go validator does not support mutually exclusive parameters for now
 // See more https://github.com/go-playground/validator/issues/608
 type TransactionParams struct {
-	Value           string                        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	Value           *hexutil.Big                        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
 	Gas             *hexutil.Uint64               `json:"gas,omitempty" example:"0x5208" swaggertype:"string"`
 	GasPrice        *hexutil.Big                  `json:"gasPrice,omitempty" validate:"omitempty" example:"0x5208" swaggertype:"string"`
 	GasFeeCap       *hexutil.Big                  `json:"maxFeePerGas,omitempty" example:"0x4c4b40" swaggertype:"string"`
@@ -31,11 +31,11 @@ type TransactionParams struct {
 	OneTimeKey      bool                          `json:"oneTimeKey,omitempty" example:"true"`
 	GasPricePolicy  GasPriceParams                `json:"gasPricePolicy,omitempty"`
 	Protocol        entities.PrivateTxManagerType `json:"protocol,omitempty" validate:"omitempty,isPrivateTxManagerType" example:"Tessera"`
-	PrivateFrom     string                        `json:"privateFrom,omitempty" validate:"omitempty,base64,required_with=PrivateFor PrivacyGroupID" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
-	PrivateFor      []string                      `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
-	MandatoryFor    []string                      `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
-	PrivacyGroupID  string                        `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
-	PrivacyFlag     int                           `json:"privacyFlag,omitempty" validate:"omitempty,isPrivacyFlag" example:"0"`
+	PrivateFrom     []byte                        `json:"privateFrom,omitempty" validate:"omitempty,base64,required_with=PrivateFor PrivacyGroupID" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=" swaggertype:"string"`
+	PrivateFor      [][]byte                      `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]" swaggertype:"[]string"`
+	MandatoryFor    [][]byte                      `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]" swaggertype:"[]string"`
+	PrivacyGroupID  []byte                        `json:"privacyGroupId,omitempty" validate:"omitempty,base64" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=" swaggertype:"string"`
+	PrivacyFlag     entities.PrivacyFlag          `json:"privacyFlag,omitempty" validate:"omitempty,isPrivacyFlag" example:"0"`
 }
 
 func (params *TransactionParams) Validate() error {

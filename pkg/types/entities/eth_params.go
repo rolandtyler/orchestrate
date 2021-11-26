@@ -18,10 +18,10 @@ type ETHTransactionParams struct {
 	TransactionType string               `json:"transactionType,omitempty" example:"dynamic_fee" enums:"legacy,dynamic_fee"`
 	MethodSignature string               `json:"methodSignature,omitempty" example:"transfer(address,uint256)"`
 	Args            []interface{}        `json:"args,omitempty"`
-	Raw             *hexutil.Bytes       `json:"raw,omitempty" example:"0xfe378324abcde723"`
+	Raw             hexutil.Bytes       `json:"raw,omitempty" example:"0xfe378324abcde723"`
 	ContractName    string               `json:"contractName,omitempty" example:"MyContract"`
 	ContractTag     string               `json:"contractTag,omitempty" example:"v1.1.0"`
-	Nonce           *hexutil.Uint64      `json:"nonce,omitempty" example:"0x1" swaggertype:"string"`
+	Nonce           hexutil.Uint64      `json:"nonce,omitempty" example:"0x1" swaggertype:"string"`
 	Protocol        PrivateTxManagerType `json:"protocol,omitempty" example:"Tessera"`
 	PrivateFrom     []byte               `json:"privateFrom,omitempty" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 	PrivateFor      [][]byte             `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`

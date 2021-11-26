@@ -3,8 +3,8 @@ package entities
 import (
 	"time"
 
-	"github.com/consensys/quorum/common/hexutil"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type Faucet struct {

@@ -16,6 +16,7 @@ import (
 	usecases "github.com/consensys/orchestrate/services/api/business/use-cases"
 	"github.com/consensys/orchestrate/services/api/store"
 	"github.com/consensys/orchestrate/services/api/store/models"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gofrs/uuid"
 )
 
@@ -206,13 +207,13 @@ func (uc *sendTxUsecase) insertNewTxRequest(
 }
 
 // Execute validates, creates and starts a new transaction for pre funding users account
-func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account, scheduleUUID string, chain *entities.Chain, userInfo *multitenancy.UserInfo) (*entities.Job, error) {
-	if account == "" {
+func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account *ethcommon.Address, scheduleUUID string, chain *entities.Chain, userInfo *multitenancy.UserInfo) (*entities.Job, error) {
+	if account == nil {
 		return nil, nil
 	}
 
 	logger := uc.logger.WithContext(ctx).WithField("chain", chain.UUID)
-	faucet, err := uc.getFaucetCandidate.Execute(ctx, account, chain, userInfo)
+	faucet, err := uc.getFaucetCandidate.Execute(ctx, *account, chain, userInfo)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			return nil, nil
@@ -230,9 +231,9 @@ func (uc *sendTxUsecase) startFaucetJob(ctx context.Context, account, scheduleUU
 		},
 		InternalData: &entities.InternalData{},
 		Transaction: &entities.ETHTransaction{
-			From:  faucet.CreditorAccount.Hex(),
+			From:  &faucet.CreditorAccount,
 			To:    account,
-			Value: faucet.Amount,
+			Value: &faucet.Amount,
 		},
 	}
 	fctJob, err := uc.createJobUC.Execute(ctx, txJob, userInfo)

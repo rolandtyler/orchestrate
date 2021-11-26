@@ -1,15 +1,14 @@
 package entities
 
 import (
+	"math/big"
 	"time"
-
-	"github.com/consensys/quorum/common/hexutil"
 )
 
 type InternalData struct {
 	OneTimeKey        bool          `json:"oneTimeKey,omitempty"`
 	HasBeenRetried    bool          `json:"hasBeenRetried,omitempty"`
-	ChainID           *hexutil.Big  `json:"chainID"`
+	ChainID           *big.Int      `json:"chainID"`
 	Priority          string        `json:"priority"`
 	ParentJobUUID     string        `json:"parentJobUUID,omitempty"`
 	GasPriceIncrement float64       `json:"gasPriceIncrement,omitempty"`

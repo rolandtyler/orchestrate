@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func ETHTransactionToTransaction(tx *entities.ETHTransaction, chainIDStr string) *types.Transaction {
+func ETHTransactionToTransaction(tx *entities.ETHTransaction, chainIDStr *big.Int) *types.Transaction {
 	var txData types.TxData
 
 	// No need to validate the data as we know that internally the values are correct
