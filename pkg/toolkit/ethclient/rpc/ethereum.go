@@ -397,13 +397,13 @@ func toCallArg(msg *eth.CallMsg) interface{} {
 		arg["data"] = hexutil.Bytes(msg.Data)
 	}
 	if msg.Value != nil {
-		arg["value"] = (hexutil.Big)(msg.Value)
+		arg["value"] = (*hexutil.Big)(msg.Value)
 	}
 	if msg.Gas != 0 {
 		arg["gas"] = hexutil.Uint64(msg.Gas)
 	}
 	if msg.GasPrice != nil {
-		arg["gasPrice"] = (hexutil.Big)(msg.GasPrice)
+		arg["gasPrice"] = (*hexutil.Big)(msg.GasPrice)
 	}
 	return arg
 }

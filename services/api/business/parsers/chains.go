@@ -3,6 +3,7 @@ package parsers
 import (
 	"github.com/consensys/orchestrate/pkg/types/entities"
 	"github.com/consensys/orchestrate/services/api/store/models"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func NewChainFromModel(chainModel *models.Chain) *entities.Chain {
@@ -12,7 +13,7 @@ func NewChainFromModel(chainModel *models.Chain) *entities.Chain {
 		TenantID:                  chainModel.TenantID,
 		OwnerID:                   chainModel.OwnerID,
 		URLs:                      chainModel.URLs,
-		ChainID:                   chainModel.ChainID,
+		ChainID:                   *hexutil.MustDecodeBig(chainModel.ChainID),
 		ListenerDepth:             chainModel.ListenerDepth,
 		ListenerCurrentBlock:      chainModel.ListenerCurrentBlock,
 		ListenerStartingBlock:     chainModel.ListenerStartingBlock,
@@ -47,7 +48,7 @@ func NewChainModelFromEntity(chain *entities.Chain) *models.Chain {
 		TenantID:                  chain.TenantID,
 		OwnerID:                   chain.OwnerID,
 		URLs:                      chain.URLs,
-		ChainID:                   chain.ChainID,
+		ChainID:                   chain.ChainID.String(),
 		ListenerDepth:             chain.ListenerDepth,
 		ListenerCurrentBlock:      chain.ListenerCurrentBlock,
 		ListenerStartingBlock:     chain.ListenerStartingBlock,

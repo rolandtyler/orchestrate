@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"reflect"
 
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -30,6 +31,58 @@ func MustEncodeBigInt(s string) *big.Int {
 	}
 
 	return b
+}
+
+type IStringObj interface {
+	String() string
+}
+
+func ObjectToString(obj IStringObj) string {
+	if obj == nil {
+		return ""
+	}
+	
+	return obj.String()
+}
+
+func BytesToString(b []byte) string {
+	if b == nil {
+		return ""
+	}
+	
+	return string(b)
+}
+
+func ArrBytesToString(arr [][]byte) []string {
+	if arr == nil {
+		return nil
+	}
+	
+	r := []string{}
+	for _, b := range arr {
+		r = append(r, BytesToString(b))
+	}
+	
+	return r
+}
+
+func StringToEthHash(s string) *ethcommon.Hash {
+	if s == "" {
+		return nil
+	}
+	
+	hash := ethcommon.HexToHash(s)
+	return &hash
+}
+
+
+func ToEthAddr(s string) *ethcommon.Address {
+	if s == "" {
+		return nil
+	}
+	
+	add := ethcommon.HexToAddress(s)
+	return &add
 }
 
 func ParseIArrayToStringArray(ints []interface{}) ([]string, error) {

@@ -58,7 +58,11 @@ func (c *HTTPClient) SearchJob(ctx context.Context, filters *entities.JobFilters
 
 	var qParams []string
 	if len(filters.TxHashes) > 0 {
-		qParams = append(qParams, "tx_hashes="+strings.Join(filters.TxHashes, ","))
+		txHashes := []string{}
+		for _, hash := range filters.TxHashes {
+			txHashes = append(txHashes, hash.Hex())	
+		}
+		qParams = append(qParams, "tx_hashes="+strings.Join(txHashes, ","))
 	}
 
 	if filters.ChainUUID != "" {
