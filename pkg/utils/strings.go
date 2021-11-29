@@ -3,11 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"reflect"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // ShortString makes hashes short for a limited column size
@@ -19,31 +17,6 @@ func ShortString(s string, tailLength int) string {
 	return s
 }
 
-func IsHexString(s string) bool {
-	_, err := hexutil.Decode(s)
-	return err == nil
-}
-
-func MustEncodeBigInt(s string) *big.Int {
-	b, ok := new(big.Int).SetString(s, 10)
-	if !ok {
-		panic("failed to convert to big.Int")
-	}
-
-	return b
-}
-
-type IStringObj interface {
-	String() string
-}
-
-func ObjectToString(obj IStringObj) string {
-	if obj == nil {
-		return ""
-	}
-	
-	return obj.String()
-}
 
 func BytesToString(b []byte) string {
 	if b == nil {
@@ -51,19 +24,6 @@ func BytesToString(b []byte) string {
 	}
 	
 	return string(b)
-}
-
-func ArrBytesToString(arr [][]byte) []string {
-	if arr == nil {
-		return nil
-	}
-	
-	r := []string{}
-	for _, b := range arr {
-		r = append(r, BytesToString(b))
-	}
-	
-	return r
 }
 
 func StringToEthHash(s string) *ethcommon.Hash {

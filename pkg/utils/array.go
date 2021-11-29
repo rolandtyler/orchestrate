@@ -38,6 +38,32 @@ func ArrayIntersection(iarr, jarr interface{}) interface{} {
 	return intersect
 }
 
+func ArrBytesToString(arr [][]byte) []string {
+	if arr == nil {
+		return nil
+	}
+	
+	r := []string{}
+	for _, b := range arr {
+		r = append(r, BytesToString(b))
+	}
+	
+	return r
+}
+
+func ArrStringToBytes(arr []string) [][]byte {
+	if arr == nil {
+		return nil
+	}
+	
+	r := [][]byte{}
+	for _, b := range arr {
+		r = append(r, []byte(b))
+	}
+	
+	return r
+}
+
 func CastInterfaceToObject(data, result interface{}) error {
 	dataB, err := json.Marshal(data)
 	if err != nil {

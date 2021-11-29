@@ -148,17 +148,16 @@ func (nc *nonceManager) IncrementNonce(ctx context.Context, job *entities.Job) e
 
 func (nc *nonceManager) fetchNonceFromChain(ctx context.Context, job *entities.Job) (n uint64, err error) {
 	url := utils.GetProxyURL(nc.chainRegistryURL, job.ChainUUID)
-	fromAddr := ethcommon.HexToAddress(job.Transaction.From)
 
 	switch {
-	case string(job.Type) == tx.JobType_ETH_EEA_PRIVATE_TX.String() && job.Transaction.PrivacyGroupID != "":
-		n, err = nc.ethClient.PrivNonce(ctx, url, fromAddr,
+	case string(job.Type) == tx.JobType_ETH_EEA_PRIVATE_TX.String() && job.Transaction.PrivacyGroupID != nil:
+		n, err = nc.ethClient.PrivNonce(ctx, url, *job.Transaction.From,
 			job.Transaction.PrivacyGroupID)
 	case string(job.Type) == tx.JobType_ETH_EEA_PRIVATE_TX.String() && len(job.Transaction.PrivateFor) > 0:
-		n, err = nc.ethClient.PrivEEANonce(ctx, url, fromAddr,
+		n, err = nc.ethClient.PrivEEANonce(ctx, url, *job.Transaction.From,
 			job.Transaction.PrivateFrom, job.Transaction.PrivateFor)
 	default:
-		n, err = nc.ethClient.PendingNonceAt(ctx, url, fromAddr)
+		n, err = nc.ethClient.PendingNonceAt(ctx, url, *job.Transaction.From)
 	}
 
 	return

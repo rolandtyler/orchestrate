@@ -36,5 +36,5 @@ type SendContractTxUseCase interface {
 }
 
 type SendTxUseCase interface {
-	Execute(ctx context.Context, txRequest *entities.TxRequest, txData string, userInfo *multitenancy.UserInfo) (*entities.TxRequest, error)
+	Execute(ctx context.Context, txRequest *entities.TxRequest, txData []byte, userInfo *multitenancy.UserInfo) (*entities.TxRequest, error)
 }

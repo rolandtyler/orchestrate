@@ -17,11 +17,11 @@ type SendTransactionRequest struct {
 // go validator does not support mutually exclusive parameters for now
 // See more https://github.com/go-playground/validator/issues/608
 type TransactionParams struct {
-	Value           *hexutil.Big                        `json:"value,omitempty" validate:"omitempty,isBig" example:"71500000 (wei)"`
+	Value           *hexutil.Big                  `json:"value,omitempty" validate:"omitempty" example:"0x44300E0" swaggertype:"string"`
 	Gas             *hexutil.Uint64               `json:"gas,omitempty" example:"0x5208" swaggertype:"string"`
-	GasPrice        *hexutil.Big                  `json:"gasPrice,omitempty" validate:"omitempty" example:"0x5208" swaggertype:"string"`
+	GasPrice        *hexutil.Big                  `json:"gasPrice,omitempty" validate:"omitempty" example:"0xAB208" swaggertype:"string"`
 	GasFeeCap       *hexutil.Big                  `json:"maxFeePerGas,omitempty" example:"0x4c4b40" swaggertype:"string"`
-	GasTipCap       *hexutil.Big                 `json:"maxPriorityFeePerGas,omitempty" example:"0x59682f00" swaggertype:"string"`
+	GasTipCap       *hexutil.Big                  `json:"maxPriorityFeePerGas,omitempty" example:"0x59682f00" swaggertype:"string"`
 	AccessList      types.AccessList              `json:"accessList,omitempty" swaggertype:"array,object"`
 	TransactionType string                        `json:"transactionType,omitempty" validate:"omitempty,isTransactionType" example:"dynamic_fee" enums:"legacy,dynamic_fee"`
 	From            *ethcommon.Address            `json:"from" validate:"omitempty" example:"0x1abae27a0cbfb02945720425d3b80c7e097285534" swaggertype:"string"`

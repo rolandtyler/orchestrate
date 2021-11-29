@@ -54,7 +54,7 @@ func NewSendTxUseCase(
 }
 
 // Execute validates, creates and starts a new transaction
-func (uc *sendTxUsecase) Execute(ctx context.Context, txRequest *entities.TxRequest, txData string, userInfo *multitenancy.UserInfo) (*entities.TxRequest, error) {
+func (uc *sendTxUsecase) Execute(ctx context.Context, txRequest *entities.TxRequest, txData []byte, userInfo *multitenancy.UserInfo) (*entities.TxRequest, error) {
 	ctx = log.WithFields(ctx, log.Field("idempotency-key", txRequest.IdempotencyKey))
 	logger := uc.logger.WithContext(ctx)
 	logger.Debug("creating new transaction")
@@ -123,7 +123,7 @@ func (uc *sendTxUsecase) getChain(ctx context.Context, chainName string, userInf
 func (uc *sendTxUsecase) selectOrInsertTxRequest(
 	ctx context.Context,
 	txRequest *entities.TxRequest,
-	txData, requestHash, chainUUID string,
+	txData []byte, requestHash, chainUUID string,
 	userInfo *multitenancy.UserInfo,
 ) (*entities.TxRequest, error) {
 	if txRequest.IdempotencyKey == "" {
@@ -148,7 +148,7 @@ func (uc *sendTxUsecase) selectOrInsertTxRequest(
 func (uc *sendTxUsecase) insertNewTxRequest(
 	ctx context.Context,
 	txRequest *entities.TxRequest,
-	txData, requestHash, chainUUID, tenantID string,
+	txData []byte, requestHash, chainUUID, tenantID string,
 	userInfo *multitenancy.UserInfo,
 ) (*entities.TxRequest, error) {
 	err := database.ExecuteInDBTx(uc.db, func(dbtx database.Tx) error {
