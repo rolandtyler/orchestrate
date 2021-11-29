@@ -4,7 +4,7 @@ x-default-variables: &default-variables
   API_URL: ${API_URL-http://api:8081}
   API_METRICS_URL: ${API_METRICS_URL-http://api:8082}
   KEY_MANAGER_URL: ${KEY_MANAGER_URL-http://key-manager:8081}
-  KEY_MANAGER_METRICS_URL: ${KEY_MANAGER_URL-http://key-manager:8082}
+  KEY_MANAGER_METRICS_URL: ${KEY_MANAGER_METRICS_URL-http://key-manager:8082}
   TX_SENDER_METRICS_URL: ${TX_SENDER_METRICS_URL-http://tx-sender:8082}
   TX_LISTENER_METRICS_URL: ${TX_LISTENER_METRICS_URL-http://tx-listener:8082}
   ETH_CLIENT_RETRY_MAX_ELAPSED_TIME: 5s
@@ -105,6 +105,14 @@ services:
       - api-migration
     command: api migrate copy-db
 
+  account-import:
+    <<: *container-common
+    environment:
+      <<: *default-variables
+      <<: *api-common
+    restart: "no"
+    command: api account import
+    
   api:
     <<: *container-common
     ports:

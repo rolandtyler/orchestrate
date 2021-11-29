@@ -46,15 +46,18 @@ func WriteHTTPErrorResponse(rw http.ResponseWriter, err error) {
 		writeErrorResponse(rw, http.StatusBadRequest, err)
 	case errors.IsInvalidParameterError(err), errors.IsEncodingError(err):
 		writeErrorResponse(rw, http.StatusUnprocessableEntity, err)
-	case errors.IsPostgresConnectionError(err), errors.IsKafkaConnectionError(err):
-		writeErrorResponse(rw, http.StatusFailedDependency, errors.DependencyFailureError(internalDepErrMsg))
+	case errors.IsPostgresConnectionError(err), errors.IsKafkaConnectionError(err), errors.IsHashicorpVaultConnectionError(err), errors.IsDependencyFailureError(err):
+		writeErrorResponse(rw, http.StatusFailedDependency, errors.FromError(err).SetMessage(internalDepErrMsg))
 	case err != nil:
-		writeErrorResponse(rw, http.StatusInternalServerError, errors.InternalError(internalErrMsg))
+		writeErrorResponse(rw, http.StatusInternalServerError, errors.FromError(err).SetMessage(internalErrMsg))
 	}
 }
 
 func writeErrorResponse(rw http.ResponseWriter, status int, err error) {
-	msg, e := json.Marshal(ErrorResponse{Message: err.Error(), Code: errors.FromError(err).GetCode()})
+	msg, e := json.Marshal(ErrorResponse{
+		Message: errors.FromError(err).SetComponent("").Error(),
+		Code:    errors.FromError(err).GetCode(),
+	})
 	if e != nil {
 		http.Error(rw, e.Error(), status)
 		return

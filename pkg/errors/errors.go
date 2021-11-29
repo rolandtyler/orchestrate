@@ -80,8 +80,9 @@ const (
 	Config uint64 = 15 << 16
 
 	// Internal errors (class FFXXX)
-	Internal      uint64 = 15<<16 + 15<<12
-	DataCorrupted        = Internal + 1<<8 // Data corrupted (subclass FF1XX)
+	Internal          uint64 = 15<<16 + 15<<12
+	DataCorrupted            = Internal + 1<<8 // Data corrupted (subclass FF1XX)
+	DependencyFailure        = Internal + 2<<8 // Message corrupted (subclass FF2XX)
 )
 
 // Warningf are raised to indicate a warning
@@ -496,11 +497,11 @@ func IsInternalError(err error) bool {
 }
 
 func DependencyFailureError(format string, a ...interface{}) *ierror.Error {
-	return Errorf(Internal, format, a...)
+	return Errorf(DependencyFailure, format, a...)
 }
 
 func IsDependencyFailureError(err error) bool {
-	return isErrorClass(FromError(err).GetCode(), Internal)
+	return isErrorClass(FromError(err).GetCode(), DependencyFailure)
 }
 
 // DataCorruptedError is raised loading a corrupted Data

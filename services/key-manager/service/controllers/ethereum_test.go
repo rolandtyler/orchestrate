@@ -104,7 +104,7 @@ func (s *ethereumCtrlTestSuite) TestEthereumController_Create() {
 		s.vault.EXPECT().ETHCreateAccount(gomock.Any()).Return(nil, errors.HashicorpVaultConnectionError("error"))
 
 		s.router.ServeHTTP(rw, httpRequest)
-		assert.Equal(t, http.StatusInternalServerError, rw.Code)
+		assert.Equal(t, http.StatusFailedDependency, rw.Code)
 	})
 }
 

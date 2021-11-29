@@ -6,7 +6,6 @@ import (
 	"github.com/ConsenSys/orchestrate/cmd/api/scripts"
 	"github.com/ConsenSys/orchestrate/pkg/toolkit/database/postgres"
 	"github.com/ConsenSys/orchestrate/services/api/store/postgres/migrations"
-	keymanagerclient "github.com/ConsenSys/orchestrate/services/key-manager/client"
 	"github.com/go-pg/pg/v9"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -64,7 +63,6 @@ func newMigrateCmd() *cobra.Command {
 		Short: "Upgrade database",
 		Long:  "Runs all available migrations or up to [target] if argument is provided",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			keymanagerclient.Init()
 			return migrate(db, append([]string{"up"}, args...)...)
 		},
 	}

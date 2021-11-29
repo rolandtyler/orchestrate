@@ -88,7 +88,7 @@ func (s *zksCtrlTestSuite) TestZKSController_Create() {
 		s.vault.EXPECT().ZKSCreateAccount(gomock.Any()).Return(nil, errors.HashicorpVaultConnectionError("error"))
 
 		s.router.ServeHTTP(rw, httpRequest)
-		assert.Equal(t, http.StatusInternalServerError, rw.Code)
+		assert.Equal(t, http.StatusFailedDependency, rw.Code)
 	})
 }
 

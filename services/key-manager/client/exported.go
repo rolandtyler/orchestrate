@@ -24,8 +24,12 @@ func Init() {
 		}
 		logger := log.NewLogger().SetComponent(component)
 		conf := NewConfigFromViper(viper.GetViper(), backoff.ConstantBackOffWithMaxRetries(time.Second, 5))
-		client = NewHTTPClient(http.NewClient(http.NewConfig(viper.GetViper())), conf)
-		logger.WithField("url", conf.URL).Info("client ready")
+		if conf.URL != "" {
+			client = NewHTTPClient(http.NewClient(http.NewConfig(viper.GetViper())), conf)
+			logger.WithField("url", conf.URL).Info("client ready")
+		} else {
+			client = NewNonHTTPClient()
+		}
 	})
 }
 

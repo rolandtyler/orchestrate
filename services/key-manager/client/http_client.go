@@ -16,6 +16,8 @@ import (
 const zksAccountType = "zk-snarks"
 const ethAccountType = "ethereum"
 
+var _ KeyManagerClient = &HTTPClient{}
+
 func NewHTTPClient(h *http.Client, c *Config) KeyManagerClient {
 	return &HTTPClient{
 		client: h,

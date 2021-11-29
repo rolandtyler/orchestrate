@@ -1,5 +1,11 @@
 # Orchestrate Release Notes
 
+## v21.1.12 (2021-11-29)
+
+### 🛠 Bug fixes
+* Migrations fail when key-manager is disabled
+* Key Manager fails with incorrect error code when key-manager is disabled
+
 ## v21.1.11 (2021-11-23)
 
 ### 🛠 Bug fixes
