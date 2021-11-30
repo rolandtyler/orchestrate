@@ -141,5 +141,5 @@ func (uc *createJobUseCase) getChainID(ctx context.Context, chainUUID string, us
 		return nil, errors.FromError(err)
 	}
 
-	return &chain.ChainID, nil
+	return chain.ChainID, nil
 }

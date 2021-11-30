@@ -11,7 +11,7 @@ type Chain struct {
 	TenantID                  string
 	OwnerID                   string
 	URLs                      []string
-	ChainID                   big.Int
+	ChainID                   *big.Int
 	ListenerDepth             uint64
 	ListenerCurrentBlock      uint64
 	ListenerStartingBlock     uint64

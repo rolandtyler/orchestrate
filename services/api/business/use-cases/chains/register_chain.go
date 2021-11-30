@@ -58,7 +58,7 @@ func (uc *registerChainUseCase) Execute(ctx context.Context, chain *entities.Cha
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(registerChainComponent)
 	}
-	chain.ChainID = *chainID
+	chain.ChainID = chainID
 
 	if fromLatest {
 		chainTip, der := uc.getChainTip(ctx, chain.URLs)
