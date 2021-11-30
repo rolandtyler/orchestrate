@@ -1,19 +1,15 @@
 package entities
 
-import (
-	"time"
-
-	ethcommon "github.com/ethereum/go-ethereum/common"
-)
+import "time"
 
 type JobFilters struct {
-	TxHashes      []ethcommon.Hash `validate:"omitempty,unique,dive"`
-	ChainUUID     string           `validate:"omitempty,uuid"`
-	Status        JobStatus        `validate:"omitempty,isJobStatus"`
-	UpdatedAfter  time.Time        `validate:"omitempty"`
-	ParentJobUUID string           `validate:"omitempty"`
-	OnlyParents   bool             `validate:"omitempty"`
-	WithLogs      bool             `validate:"omitempty"`
+	TxHashes      []string  `validate:"omitempty,unique,dive,isHash"`
+	ChainUUID     string    `validate:"omitempty,uuid"`
+	Status        JobStatus `validate:"omitempty,isJobStatus"`
+	UpdatedAfter  time.Time `validate:"omitempty"`
+	ParentJobUUID string    `validate:"omitempty"`
+	OnlyParents   bool      `validate:"omitempty"`
+	WithLogs      bool      `validate:"omitempty"`
 }
 
 type TransactionRequestFilters struct {

@@ -2,36 +2,37 @@ package utils
 
 import (
 	"math/big"
+	"reflect"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-func HexBigInt(v *big.Int) *hexutil.Big {
-	return ToPtr(hexutil.Big(*v)).(*hexutil.Big)
-}
-
 type IStringObj interface {
 	String() string
 }
 
-func HexToString(obj IStringObj) string {
-	if obj == nil {
-		return ""
+func StructToString(v IStringObj) string {
+	switch reflect.TypeOf(v).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		// use of IsNil method
+		if reflect.ValueOf(v).IsNil() {
+			return ""
+		}
 	}
-	
-	return obj.String()
+
+	return v.String()
 }
 
 func StringToHexBytes(v string) hexutil.Bytes {
 	if v == "" {
 		return nil
 	}
-	
+
 	if vb, err := hexutil.Decode(v); err == nil {
 		return vb
 	}
-	
+
 	return nil
 }
 func StringToHexInt(v string) *hexutil.Big {
@@ -51,7 +52,6 @@ func StringToUint64(v string) *uint64 {
 		return nil
 	}
 
-	
 	if vi, err := strconv.ParseUint(v, 10, 64); err == nil {
 		return &vi
 	}

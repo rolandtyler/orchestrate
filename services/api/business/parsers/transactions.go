@@ -9,17 +9,17 @@ import (
 
 func NewTransactionModelFromEntities(tx *entities.ETHTransaction) *models.Transaction {
 	return &models.Transaction{
-		Hash:           utils.HexToString(tx.Hash),
-		Sender:         utils.HexToString(tx.From),
-		Recipient:      utils.HexToString(tx.To),
-		Nonce:          utils.IntegerToString(tx.Nonce),
-		Value:          utils.HexToString(tx.Value),
-		GasPrice:       utils.HexToString(tx.GasPrice),
-		GasFeeCap:      utils.HexToString(tx.GasFeeCap),
-		GasTipCap:      utils.HexToString(tx.GasTipCap),
-		Gas:            utils.IntegerToString(tx.Gas),
-		Data:           utils.HexToString(tx.Data),
-		Raw:            utils.HexToString(tx.Raw),
+		Hash:           utils.StructToString(tx.Hash),
+		Sender:         utils.StructToString(tx.From),
+		Recipient:      utils.StructToString(tx.To),
+		Nonce:          utils.ValueToString(tx.Nonce),
+		Value:          utils.StructToString(tx.Value),
+		GasPrice:       utils.StructToString(tx.GasPrice),
+		GasFeeCap:      utils.StructToString(tx.GasFeeCap),
+		GasTipCap:      utils.StructToString(tx.GasTipCap),
+		Gas:            utils.ValueToString(tx.Gas),
+		Data:           utils.StructToString(tx.Data),
+		Raw:            utils.StructToString(tx.Raw),
 		TxType:         string(tx.TransactionType),
 		AccessList:     tx.AccessList,
 		PrivateFrom:    utils.BytesToString(tx.PrivateFrom),
@@ -27,7 +27,7 @@ func NewTransactionModelFromEntities(tx *entities.ETHTransaction) *models.Transa
 		MandatoryFor:   utils.ArrBytesToString(tx.MandatoryFor),
 		PrivacyGroupID: utils.BytesToString(tx.PrivacyGroupID),
 		PrivacyFlag:    int(tx.PrivacyFlag),
-		EnclaveKey:     utils.HexToString(tx.EnclaveKey),
+		EnclaveKey:     utils.StructToString(tx.EnclaveKey),
 		CreatedAt:      tx.CreatedAt,
 		UpdatedAt:      tx.UpdatedAt,
 	}
@@ -63,22 +63,22 @@ func NewTransactionEntityFromModels(tx *models.Transaction) *entities.ETHTransac
 }
 
 func UpdateTransactionModelFromEntities(txModel *models.Transaction, tx *entities.ETHTransaction) {
-	txModel.Hash = utils.HexToString(tx.Hash)
-	txModel.Sender = utils.HexToString(tx.From)
-	txModel.Recipient = utils.HexToString(tx.To)
-	txModel.Nonce = utils.IntegerToString(tx.Nonce)
-	txModel.Value = utils.HexToString(tx.Value)
-	txModel.GasPrice = utils.HexToString(tx.GasPrice)
-	txModel.GasFeeCap = utils.HexToString(tx.GasFeeCap)
-	txModel.GasTipCap = utils.HexToString(tx.GasTipCap)
-	txModel.Gas = utils.IntegerToString(tx.Gas)
-	txModel.Data = utils.HexToString(tx.Data)
-	txModel.Raw = utils.HexToString(tx.Raw)
+	txModel.Hash = utils.StructToString(tx.Hash)
+	txModel.Sender = utils.StructToString(tx.From)
+	txModel.Recipient = utils.StructToString(tx.To)
+	txModel.Nonce = utils.ValueToString(tx.Nonce)
+	txModel.Value = utils.StructToString(tx.Value)
+	txModel.GasPrice = utils.StructToString(tx.GasPrice)
+	txModel.GasFeeCap = utils.StructToString(tx.GasFeeCap)
+	txModel.GasTipCap = utils.StructToString(tx.GasTipCap)
+	txModel.Gas = utils.ValueToString(tx.Gas)
+	txModel.Data = utils.StructToString(tx.Data)
+	txModel.Raw = utils.StructToString(tx.Raw)
 	txModel.TxType = string(tx.TransactionType)
 	txModel.AccessList = tx.AccessList
 	txModel.PrivateFrom = utils.BytesToString(tx.PrivateFrom)
 	txModel.PrivateFor = utils.ArrBytesToString(tx.PrivateFor)
 	txModel.MandatoryFor = utils.ArrBytesToString(tx.MandatoryFor)
 	txModel.PrivacyGroupID = utils.BytesToString(tx.PrivacyGroupID)
-	txModel.EnclaveKey = utils.HexToString(tx.EnclaveKey)
+	txModel.EnclaveKey = utils.StructToString(tx.EnclaveKey)
 }

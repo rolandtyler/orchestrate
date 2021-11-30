@@ -476,11 +476,9 @@ func (e *Envelope) MustGetNonceUint64() uint64 {
 	return *e.Nonce
 }
 func (e *Envelope) GetNonceString() string {
-	if e.Nonce == nil {
-		return ""
-	}
-	return strconv.FormatUint(*e.Nonce, 10)
+	return utils.ValueToString(e.Nonce)
 }
+
 func (e *Envelope) SetNonceString(nonce string) error {
 	if nonce != "" {
 		g, err := strconv.ParseUint(nonce, 10, 32)
@@ -675,7 +673,7 @@ func (e *Envelope) SetDataString(data string) error {
 }
 
 func (e *Envelope) MustSetDataString(data string) *Envelope {
-	e.Data = hexutil.MustDecode(data)
+	e.Data = utils.StringToHexBytes(data)
 	return e
 }
 
@@ -712,7 +710,10 @@ func (e *Envelope) SetRawString(raw string) error {
 }
 
 func (e *Envelope) MustSetRawString(raw string) *Envelope {
-	e.Raw = hexutil.MustDecode(raw)
+	if raw != "" {
+		e.Raw = hexutil.MustDecode(raw)
+	}
+
 	return e
 }
 
@@ -938,7 +939,7 @@ func (e *Envelope) GetPrivacyGroupID() string {
 }
 
 func (e *Envelope) GetEnclaveKey() hexutil.Bytes {
-	return hexutil.MustDecode(e.InternalLabels[EnclaveKeyLabel])
+	return utils.StringToHexBytes(e.InternalLabels[EnclaveKeyLabel])
 }
 
 func (e *Envelope) SetEnclaveKey(enclaveKey string) *Envelope {

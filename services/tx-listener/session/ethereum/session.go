@@ -356,9 +356,9 @@ func (s *Session) fetchJobs(ctx context.Context, transactions ethtypes.Transacti
 			size = transactions.Len()
 		}
 		currTransactions := transactions[i:size]
-		var txHashes []ethcommon.Hash
+		var txHashes []string
 		for _, t := range currTransactions {
-			txHashes = append(txHashes, t.Hash())
+			txHashes = append(txHashes, t.Hash().String())
 		}
 
 		// By design, we will receive 0 or 1 job per tx_hash in the filter because we filter by status PENDING

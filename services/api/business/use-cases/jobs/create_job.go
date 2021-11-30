@@ -45,7 +45,6 @@ func (uc *createJobUseCase) Execute(ctx context.Context, job *entities.Job, user
 	ctx = log.WithFields(ctx, log.Field("chain", job.ChainUUID), log.Field("schedule", job.ScheduleUUID))
 	logger := uc.logger.WithContext(ctx)
 	logger.Debug("creating new job")
-
 	chainID, err := uc.getChainID(ctx, job.ChainUUID, userInfo)
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(createJobComponent)

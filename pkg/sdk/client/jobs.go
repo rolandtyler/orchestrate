@@ -60,7 +60,7 @@ func (c *HTTPClient) SearchJob(ctx context.Context, filters *entities.JobFilters
 	if len(filters.TxHashes) > 0 {
 		txHashes := []string{}
 		for _, hash := range filters.TxHashes {
-			txHashes = append(txHashes, hash.Hex())	
+			txHashes = append(txHashes, hash)	
 		}
 		qParams = append(qParams, "tx_hashes="+strings.Join(txHashes, ","))
 	}

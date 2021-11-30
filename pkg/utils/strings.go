@@ -26,12 +26,19 @@ func BytesToString(b []byte) string {
 	return string(b)
 }
 
-func IntegerToString(v interface{}) string {
-	if v == nil {
-		return ""
+func ValueToString(v interface{}) string {
+	switch reflect.TypeOf(v).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		// use of IsNil method
+		if reflect.ValueOf(v).IsNil() {
+			return ""
+		}
+		
+		return fmt.Sprintf("%v", reflect.ValueOf(v).Elem())
 	}
 	
-	return fmt.Sprintf("%d", v)
+	
+	return fmt.Sprintf("%v", v)
 }
 
 func StringToEthHash(s string) *ethcommon.Hash {

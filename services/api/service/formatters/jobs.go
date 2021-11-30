@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/consensys/orchestrate/pkg/errors"
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/consensys/orchestrate/pkg/types/entities"
@@ -76,15 +75,7 @@ func FormatJobFilterRequest(req *http.Request) (*entities.JobFilters, error) {
 
 	qTxHashes := req.URL.Query().Get("tx_hashes")
 	if qTxHashes != "" {
-		filters.TxHashes = []ethcommon.Hash{}
-		for _, txHash := range strings.Split(qTxHashes, ",") {
-			if !utils.IsHash(txHash) {
-				errMessage := "failed to parse tx_hashes"
-				log.WithField("tx_hash", txHash).Error(errMessage)
-				return nil, errors.InvalidParameterError(errMessage)
-			}
-			filters.TxHashes = append(filters.TxHashes, ethcommon.HexToHash(txHash))
-		}
+		filters.TxHashes = strings.Split(qTxHashes, ",")
 	}
 
 	qChainUUID := req.URL.Query().Get("chain_uuid")
