@@ -13,6 +13,7 @@ import (
 	"github.com/consensys/orchestrate/services/tx-sender/tx-sender/nonce"
 	usecases "github.com/consensys/orchestrate/services/tx-sender/tx-sender/use-cases"
 	utils2 "github.com/consensys/orchestrate/services/tx-sender/tx-sender/utils"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 const sendETHTxComponent = "use-cases.send-eth-tx"
@@ -101,13 +102,13 @@ func (uc *sendETHTxUseCase) Execute(ctx context.Context, job *entities.Job) erro
 	return nil
 }
 
-func (uc *sendETHTxUseCase) sendTx(ctx context.Context, job *entities.Job) (string, error) {
+func (uc *sendETHTxUseCase) sendTx(ctx context.Context, job *entities.Job) (*ethcommon.Hash, error) {
 	proxyURL := utils.GetProxyURL(uc.chainRegistryURL, job.ChainUUID)
 	txHash, err := uc.ec.SendRawTransaction(ctx, proxyURL, job.Transaction.Raw)
 	if err != nil {
 		uc.logger.WithContext(ctx).WithError(err).Error("cannot send raw ethereum transaction")
-		return "", err
+		return nil, err
 	}
 
-	return txHash.String(), nil
+	return &txHash, nil
 }

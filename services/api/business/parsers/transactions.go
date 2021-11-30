@@ -12,12 +12,12 @@ func NewTransactionModelFromEntities(tx *entities.ETHTransaction) *models.Transa
 		Hash:           utils.HexToString(tx.Hash),
 		Sender:         utils.HexToString(tx.From),
 		Recipient:      utils.HexToString(tx.To),
-		Nonce:          utils.HexToString(tx.Nonce),
+		Nonce:          utils.IntegerToString(tx.Nonce),
 		Value:          utils.HexToString(tx.Value),
 		GasPrice:       utils.HexToString(tx.GasPrice),
 		GasFeeCap:      utils.HexToString(tx.GasFeeCap),
 		GasTipCap:      utils.HexToString(tx.GasTipCap),
-		Gas:            utils.HexToString(tx.Gas),
+		Gas:            utils.IntegerToString(tx.Gas),
 		Data:           utils.HexToString(tx.Data),
 		Raw:            utils.HexToString(tx.Raw),
 		TxType:         string(tx.TransactionType),
@@ -41,10 +41,10 @@ func NewTransactionEntityFromModels(tx *models.Transaction) *entities.ETHTransac
 		Hash:            utils.StringToEthHash(tx.Hash),
 		From:            utils.ToEthAddr(tx.Sender),
 		To:              utils.ToEthAddr(tx.Recipient),
-		Nonce:           utils.StringToHexUint64(tx.Nonce),
+		Nonce:           utils.StringToUint64(tx.Nonce),
 		Value:           utils.StringToHexInt(tx.Value),
 		GasPrice:        utils.StringToHexInt(tx.GasPrice),
-		Gas:             utils.StringToHexUint64(tx.Gas),
+		Gas:             utils.StringToUint64(tx.Gas),
 		GasTipCap:       utils.StringToHexInt(tx.GasTipCap),
 		GasFeeCap:       utils.StringToHexInt(tx.GasFeeCap),
 		Data:            utils.StringToHexBytes(tx.Data),
@@ -66,17 +66,15 @@ func UpdateTransactionModelFromEntities(txModel *models.Transaction, tx *entitie
 	txModel.Hash = utils.HexToString(tx.Hash)
 	txModel.Sender = utils.HexToString(tx.From)
 	txModel.Recipient = utils.HexToString(tx.To)
-	txModel.Nonce = utils.HexToString(tx.Nonce)
+	txModel.Nonce = utils.IntegerToString(tx.Nonce)
 	txModel.Value = utils.HexToString(tx.Value)
 	txModel.GasPrice = utils.HexToString(tx.GasPrice)
 	txModel.GasFeeCap = utils.HexToString(tx.GasFeeCap)
 	txModel.GasTipCap = utils.HexToString(tx.GasTipCap)
-	txModel.Gas = utils.HexToString(tx.Gas)
+	txModel.Gas = utils.IntegerToString(tx.Gas)
 	txModel.Data = utils.HexToString(tx.Data)
 	txModel.Raw = utils.HexToString(tx.Raw)
-	if tx.TransactionType != "" {
-		txModel.TxType = string(tx.TransactionType)
-	}
+	txModel.TxType = string(tx.TransactionType)
 	txModel.AccessList = tx.AccessList
 	txModel.PrivateFrom = utils.BytesToString(tx.PrivateFrom)
 	txModel.PrivateFor = utils.ArrBytesToString(tx.PrivateFor)

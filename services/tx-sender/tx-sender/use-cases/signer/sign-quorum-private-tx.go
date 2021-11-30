@@ -8,6 +8,7 @@ import (
 	qkm "github.com/consensys/orchestrate/pkg/quorum-key-manager"
 	"github.com/consensys/orchestrate/pkg/toolkit/app/log"
 	"github.com/consensys/orchestrate/pkg/types/entities"
+	"github.com/consensys/orchestrate/pkg/utils"
 	"github.com/consensys/orchestrate/services/tx-sender/tx-sender/parsers"
 	qkmtypes "github.com/consensys/quorum-key-manager/src/stores/api/types"
 	quorumtypes "github.com/consensys/quorum/core/types"
@@ -40,7 +41,7 @@ func NewSignQuorumPrivateTransactionUseCase(keyManagerClient client.KeyManagerCl
 }
 
 // Execute signs a quorum private transaction
-func (uc *signQuorumPrivateTransactionUseCase) Execute(ctx context.Context, job *entities.Job) (signedRaw hexutil.Bytes, txHash ethcommon.Hash, err error) {
+func (uc *signQuorumPrivateTransactionUseCase) Execute(ctx context.Context, job *entities.Job) (signedRaw hexutil.Bytes, txHash *ethcommon.Hash, err error) {
 	logger := uc.logger.WithContext(ctx).WithField("one_time_key", job.InternalData.OneTimeKey)
 
 	transaction := parsers.ETHTransactionToQuorumTransaction(job.Transaction)
@@ -51,47 +52,49 @@ func (uc *signQuorumPrivateTransactionUseCase) Execute(ctx context.Context, job 
 		signedRaw, txHash, err = uc.signWithAccount(ctx, job, transaction)
 	}
 	if err != nil {
-		return nil, ethcommon.Hash{}, errors.FromError(err).ExtendComponent(signQuorumPrivateTransactionComponent)
+		return nil, nil, errors.FromError(err).ExtendComponent(signQuorumPrivateTransactionComponent)
 	}
 
 	logger.WithField("tx_hash", txHash).Debug("quorum private transaction signed successfully")
 	return signedRaw, txHash, nil
 }
 
-func (uc *signQuorumPrivateTransactionUseCase) signWithOneTimeKey(ctx context.Context, transaction *quorumtypes.Transaction) (signedRaw hexutil.Bytes, txHash ethcommon.Hash, err error) {
+func (uc *signQuorumPrivateTransactionUseCase) signWithOneTimeKey(ctx context.Context, transaction *quorumtypes.Transaction) (
+	signedRaw hexutil.Bytes, txHash *ethcommon.Hash, err error) {
 	logger := uc.logger.WithContext(ctx)
 	privKey, err := crypto.GenerateKey()
 	if err != nil {
 		errMessage := "failed to generate Ethereum account"
 		logger.WithError(err).Error(errMessage)
-		return nil, ethcommon.Hash{}, errors.CryptoOperationError(errMessage)
+		return nil, nil, errors.CryptoOperationError(errMessage)
 	}
 
 	signer := pkgcryto.GetQuorumPrivateTxSigner()
 	decodedSignature, err := pkgcryto.SignQuorumPrivateTransaction(transaction, privKey, signer)
 	if err != nil {
 		logger.WithError(err).Error("failed to sign private transaction")
-		return nil, ethcommon.Hash{}, err
+		return nil, nil, err
 	}
 
 	signedTx, err := transaction.WithSignature(signer, decodedSignature)
 	if err != nil {
 		errMessage := "failed to set quorum private transaction signature"
 		logger.WithError(err).Error(errMessage)
-		return nil, ethcommon.Hash{}, errors.InvalidParameterError(errMessage).ExtendComponent(signQuorumPrivateTransactionComponent)
+		return nil, nil, errors.InvalidParameterError(errMessage).ExtendComponent(signQuorumPrivateTransactionComponent)
 	}
 
 	signedRawB, err := rlp.Encode(signedTx)
 	if err != nil {
 		errMessage := "failed to RLP encode signed quorum private transaction"
 		logger.WithError(err).Error(errMessage)
-		return nil, ethcommon.Hash{}, errors.CryptoOperationError(errMessage).ExtendComponent(signQuorumPrivateTransactionComponent)
+		return nil, nil, errors.CryptoOperationError(errMessage).ExtendComponent(signQuorumPrivateTransactionComponent)
 	}
 
-	return signedRawB, signedTx.Hash(), nil
+	return signedRawB, utils.ToPtr(signedTx.Hash()).(*ethcommon.Hash), nil
 }
 
-func (uc *signQuorumPrivateTransactionUseCase) signWithAccount(ctx context.Context, job *entities.Job, tx *quorumtypes.Transaction) (signedRaw hexutil.Bytes, txHash ethcommon.Hash, err error) {
+func (uc *signQuorumPrivateTransactionUseCase) signWithAccount(ctx context.Context, job *entities.Job, tx *quorumtypes.Transaction) (
+	signedRaw hexutil.Bytes, txHash *ethcommon.Hash, err error) {
 	logger := uc.logger.WithContext(ctx)
 	signedRawStr, err := uc.keyManagerClient.SignQuorumPrivateTransaction(ctx, uc.storeName, job.Transaction.From.Hex(), &qkmtypes.SignQuorumPrivateTransactionRequest{
 		Nonce:    hexutil.Uint64(tx.Nonce()),
@@ -104,22 +107,22 @@ func (uc *signQuorumPrivateTransactionUseCase) signWithAccount(ctx context.Conte
 	if err != nil {
 		errMsg := "failed to sign quorum private transaction using key manager"
 		logger.WithError(err).Error(errMsg)
-		return nil, ethcommon.Hash{}, errors.DependencyFailureError(errMsg).AppendReason(err.Error())
+		return nil, nil, errors.DependencyFailureError(errMsg).AppendReason(err.Error())
 	}
 
 	signedRaw, err = hexutil.Decode(signedRawStr)
 	if err != nil {
 		errMessage := "failed to decode signature"
 		logger.WithError(err).Error(errMessage)
-		return nil, ethcommon.Hash{}, errors.EncodingError(errMessage)
+		return nil, nil, errors.EncodingError(errMessage)
 	}
 
 	err = rlp.Decode(signedRaw, &tx)
 	if err != nil {
 		errMessage := "failed to decode quorum signed transaction"
 		logger.WithError(err).Error(errMessage)
-		return nil, ethcommon.Hash{}, errors.EncodingError(errMessage)
+		return nil, nil, errors.EncodingError(errMessage)
 	}
 
-	return signedRaw, tx.Hash(), nil
+	return signedRaw, utils.ToPtr(tx.Hash()).(*ethcommon.Hash), nil
 }

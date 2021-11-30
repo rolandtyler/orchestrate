@@ -23,11 +23,11 @@ func ETHTransactionToTransaction(tx *entities.ETHTransaction, chainID *big.Int) 
 	}
 	var nonce uint64
 	if tx.Nonce != nil {
-		nonce = uint64(*tx.Nonce)
+		nonce = *tx.Nonce
 	}
 	var gasLimit uint64
 	if tx.Gas != nil {
-		gasLimit = uint64(*tx.Gas)
+		gasLimit = *tx.Gas
 	}
 
 	switch tx.TransactionType {
@@ -80,11 +80,11 @@ func ETHTransactionToQuorumTransaction(tx *entities.ETHTransaction) *quorumtypes
 	}
 	var nonce uint64
 	if tx.Nonce != nil {
-		nonce = uint64(*tx.Nonce)
+		nonce = *tx.Nonce
 	}
 	var gasLimit uint64
 	if tx.Gas != nil {
-		gasLimit = uint64(*tx.Gas)
+		gasLimit = *tx.Gas
 	}
 
 	if tx.To == nil {

@@ -278,7 +278,7 @@ func TestEnvelope_Data(t *testing.T) {
 	b := NewEnvelope()
 	err := b.SetDataString("0x01")
 	assert.NoError(t, err)
-	assert.Equal(t, "0x01", b.GetData(), "Should be equal")
+	assert.Equal(t, "0x01", b.GetDataString(), "Should be equal")
 	assert.Equal(t, []byte{1}, b.MustGetDataBytes(), "Should be equal")
 
 	b.Data = ""
@@ -297,7 +297,7 @@ func TestEnvelope_Raw(t *testing.T) {
 	b := NewEnvelope()
 	err := b.SetRawString("0x01")
 	assert.NoError(t, err)
-	assert.Equal(t, "0x01", b.GetRaw(), "Should be equal")
+	assert.Equal(t, "0x01", b.GetRawString(), "Should be equal")
 	assert.Equal(t, "0x01", b.GetShortRaw(), "Should be equal")
 	assert.Equal(t, []byte{1}, b.MustGetRawBytes(), "Should be equal")
 

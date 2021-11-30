@@ -15,7 +15,7 @@ type TransferRequest struct {
 
 type TransferParams struct {
 	Value           *hexutil.Big      `json:"value,omitempty" validate:"omitempty" example:"0x59682f00" swaggertype:"string"`
-	Gas             *hexutil.Uint64   `json:"gas,omitempty" example:"0x5208" swaggertype:"string"`
+	Gas             *uint64   `json:"gas,omitempty" example:"21000"`
 	GasPrice        *hexutil.Big      `json:"gasPrice,omitempty" validate:"omitempty" example:"0x5208" swaggertype:"string"`
 	GasFeeCap       *hexutil.Big      `json:"maxFeePerGas,omitempty" example:"0x4c4b40" swaggertype:"string"`
 	GasTipCap       *hexutil.Big      `json:"maxPriorityFeePerGas,omitempty" example:"0x59682f00" swaggertype:"string"`

@@ -10,7 +10,6 @@ import (
 	"github.com/consensys/orchestrate/pkg/toolkit/app/log"
 	types "github.com/consensys/orchestrate/pkg/types/api"
 	"github.com/consensys/orchestrate/pkg/types/entities"
-	"github.com/consensys/orchestrate/pkg/utils"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 

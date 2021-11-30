@@ -22,10 +22,10 @@ func FakeETHTransaction() *entities.ETHTransaction {
 	return &entities.ETHTransaction{
 		From:        FakeAddress(),
 		To:          FakeAddress(),
-		Nonce:       utils.ToPtr(hexutil.Uint64(1)).(*hexutil.Uint64),
+		Nonce:       utils.ToPtr(uint64(1)).(*uint64),
 		Value:       utils.ToPtr(hexutil.Big(*big.NewInt(50000))).(*hexutil.Big),
 		GasPrice:    utils.ToPtr(hexutil.Big(*big.NewInt(10000))).(*hexutil.Big),
-		Gas:         utils.ToPtr(hexutil.Uint64(21000)).(*hexutil.Uint64),
+		Gas:         utils.ToPtr(uint64(21000)).(*uint64),
 		Data:        hexutil.MustDecode("0x0"),
 		Raw:         hexutil.MustDecode("0x0"),
 		PrivateFrom: []byte("A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="),

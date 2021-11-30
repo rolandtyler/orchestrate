@@ -26,6 +26,14 @@ func BytesToString(b []byte) string {
 	return string(b)
 }
 
+func IntegerToString(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	
+	return fmt.Sprintf("%d", v)
+}
+
 func StringToEthHash(s string) *ethcommon.Hash {
 	if s == "" {
 		return nil

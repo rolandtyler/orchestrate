@@ -46,14 +46,14 @@ func StringToHexInt(v string) *hexutil.Big {
 	return nil
 }
 
-func StringToHexUint64(v string) *hexutil.Uint64 {
+func StringToUint64(v string) *uint64 {
 	if v == "" {
 		return nil
 	}
 
 	
 	if vi, err := strconv.ParseUint(v, 10, 64); err == nil {
-		return (*hexutil.Uint64)(&vi)
+		return &vi
 	}
 
 	return nil

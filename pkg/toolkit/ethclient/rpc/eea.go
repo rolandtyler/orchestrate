@@ -28,7 +28,7 @@ type privateReceipt struct {
 
 // Distributes a signed, RLP encoded private transaction.
 // https://besu.hyperledger.org/en/stable/Reference/API-Methods/#priv_distributerawtransaction
-func (ec *Client) PrivDistributeRawTransaction(ctx context.Context, endpoint, raw string) (txHash ethcommon.Hash, err error) {
+func (ec *Client) PrivDistributeRawTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes) (txHash ethcommon.Hash, err error) {
 	err = ec.Call(ctx, endpoint, utils.ProcessResult(&txHash), "priv_distributeRawTransaction", raw)
 	if err != nil {
 		return ethcommon.Hash{}, errors.FromError(err).ExtendComponent(component)
@@ -36,18 +36,18 @@ func (ec *Client) PrivDistributeRawTransaction(ctx context.Context, endpoint, ra
 	return txHash, nil
 }
 
-func (ec *Client) PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) (string, error) {
-	var privGroupID string
+func (ec *Client) PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses [][]byte) ([]byte, error) {
+	var privGroupID []byte
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&privGroupID), "priv_createPrivacyGroup",
-		map[string][]string{"addresses": addresses})
+		map[string][][]byte{"addresses": addresses})
 	if err != nil {
-		return "", errors.FromError(err).ExtendComponent(component)
+		return nil, errors.FromError(err).ExtendComponent(component)
 	}
 	return privGroupID, nil
 }
 
 // PrivEEANonce Returns the private transaction count for specified account and privacy group
-func (ec *Client) PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom string, privateFor []string) (uint64, error) {
+func (ec *Client) PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom []byte, privateFor [][]byte) (uint64, error) {
 	var nonce hexutil.Uint64
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&nonce), "priv_getEeaTransactionCount", account.Hex(), privateFrom, privateFor)
 	if err != nil {
@@ -57,7 +57,7 @@ func (ec *Client) PrivEEANonce(ctx context.Context, endpoint string, account eth
 }
 
 // PrivNonce returns the private transaction count for the specified account and group of sender and recipients
-func (ec *Client) PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID string) (uint64, error) {
+func (ec *Client) PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID []byte) (uint64, error) {
 	var nonce hexutil.Uint64
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&nonce), "priv_getTransactionCount", account.Hex(), privacyGroupID)
 	if err != nil {
@@ -67,8 +67,8 @@ func (ec *Client) PrivNonce(ctx context.Context, endpoint string, account ethcom
 }
 
 // Returns a list of privacy groups containing only the listed members. For example, if the listed members are A and B, a privacy group containing A, B, and C is not returned.
-func (ec *Client) PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([]string, error) {
-	var groupIDs []string
+func (ec *Client) PrivFindPrivacyGroup(ctx context.Context, endpoint string, members [][]byte) ([][]byte, error) {
+	var groupIDs [][]byte
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&members), "priv_findPrivacyGroup", members)
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(component)
@@ -79,7 +79,7 @@ func (ec *Client) PrivFindPrivacyGroup(ctx context.Context, endpoint string, mem
 // PrivCodeAt returns the contract code of the given account.
 // The block number can be nil, in which case the code is taken from the latest known block.
 // https://besu.hyperledger.org/en/stable/Reference/API-Methods/#priv_getcode
-func (ec *Client) PrivCodeAt(ctx context.Context, endpoint string, account ethcommon.Address, privateGroupID string, blockNumber *big.Int) ([]byte, error) {
+func (ec *Client) PrivCodeAt(ctx context.Context, endpoint string, account ethcommon.Address, privateGroupID []byte, blockNumber *big.Int) ([]byte, error) {
 	var code hexutil.Bytes
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&code), "priv_getCode", privateGroupID, account, toBlockNumArg(blockNumber))
 	if err != nil {

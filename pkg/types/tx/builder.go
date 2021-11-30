@@ -556,6 +556,10 @@ func (e *Envelope) GetGasFeeCapString() string {
 	return e.GasFeeCap.String()
 }
 
+func (e *Envelope) GetGasFeeCap() *big.Int {
+	return e.GasFeeCap
+}
+
 // GasTipCap
 func (e *Envelope) SetGasTipCapString(gasTipCap string) error {
 	if gasTipCap != "" {
@@ -573,6 +577,11 @@ func (e *Envelope) SetTipCap(gasTipCap *big.Int) *Envelope {
 	return e
 }
 
+func (e *Envelope) GetGasTipCap() *big.Int {
+	return e.GasTipCap
+}
+
+// @TODO: Remove ***String() func helpers since they might not be needed anymore
 func (e *Envelope) GetGasTipCapString() string {
 	if e.GasTipCap == nil {
 		return ""
@@ -639,8 +648,12 @@ func (e *Envelope) SetValue(value *big.Int) *Envelope {
 
 // DATA
 
-func (e *Envelope) GetData() string {
+func (e *Envelope) GetDataString() string {
 	return e.Data.String()
+}
+
+func (e *Envelope) GetData() hexutil.Bytes {
+	return e.Data
 }
 
 func (e *Envelope) MustGetDataBytes() []byte {
@@ -672,7 +685,11 @@ func (e *Envelope) GetShortRaw() string {
 	return utils.ShortString(e.Raw.String(), 30)
 }
 
-func (e *Envelope) GetRaw() string {
+func (e *Envelope) GetRaw() hexutil.Bytes {
+	return e.Raw
+}
+
+func (e *Envelope) GetRawString() string {
 	return e.Raw.String()
 }
 
@@ -920,8 +937,8 @@ func (e *Envelope) GetPrivacyGroupID() string {
 	return e.PrivacyGroupID
 }
 
-func (e *Envelope) GetEnclaveKey() string {
-	return e.InternalLabels[EnclaveKeyLabel]
+func (e *Envelope) GetEnclaveKey() hexutil.Bytes {
+	return hexutil.MustDecode(e.InternalLabels[EnclaveKeyLabel])
 }
 
 func (e *Envelope) SetEnclaveKey(enclaveKey string) *Envelope {
@@ -996,12 +1013,12 @@ func (e *Envelope) TxRequest() *TxRequest {
 			GasPrice:        e.GetGasPriceString(),
 			Value:           e.GetValueString(),
 			Nonce:           e.GetNonceString(),
-			Data:            e.GetData(),
+			Data:            e.GetDataString(),
 			Contract:        e.ShortContract(),
 			TransactionType: e.GetTransactionType(),
 			MethodSignature: e.GetMethodSignature(),
 			Args:            e.GetArgs(),
-			Raw:             e.GetRaw(),
+			Raw:             e.GetRawString(),
 			PrivateFor:      e.GetPrivateFor(),
 			PrivateFrom:     e.GetPrivateFrom(),
 			PrivateTxType:   e.GetPrivateTxType(),
@@ -1092,8 +1109,8 @@ func (e *Envelope) TxResponse() *TxResponse {
 			GasTipCap:  e.GetGasTipCapString(),
 			AccessList: e.GetAccessList(),
 			TxType:     e.GetTransactionType(),
-			Data:       e.GetData(),
-			Raw:        e.GetRaw(),
+			Data:       e.GetDataString(),
+			Raw:        e.GetRawString(),
 			TxHash:     e.GetTxHashString(),
 		},
 		Chain:   e.GetChainName(),

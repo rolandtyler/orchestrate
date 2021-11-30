@@ -84,13 +84,13 @@ func (uc *craftTxUseCase) Execute(ctx context.Context, job *entities.Job) error 
 
 func (uc *craftTxUseCase) craftNonce(ctx context.Context, job *entities.Job) error {
 	if job.InternalData.OneTimeKey || string(job.Type) == tx.JobType_ETH_TESSERA_PRIVATE_TX.String() {
-		job.Transaction.Nonce = utils.ToPtr(hexutil.Uint64(hexutil.MustDecodeUint64("0x0"))).(*hexutil.Uint64)
+		job.Transaction.Nonce = utils.ToPtr(uint64(0)).(*uint64)
 	} else {
 		n, err := uc.nonceManager.GetNonce(ctx, job)
 		if err != nil {
 			return err
 		}
-		job.Transaction.Nonce = utils.ToPtr(hexutil.Uint64(n)).(*hexutil.Uint64)
+		job.Transaction.Nonce = &n
 	}
 
 	uc.logger.WithContext(ctx).WithField("value", job.Transaction.Nonce).Debug("crafted transaction nonce")
@@ -154,7 +154,7 @@ func (uc *craftTxUseCase) craftGasEstimation(ctx context.Context, job *entities.
 		return err
 	}
 
-	job.Transaction.Gas = utils.ToPtr(hexutil.Uint64(gasEstimated)).(*hexutil.Uint64)
+	job.Transaction.Gas = &gasEstimated
 	logger.WithField("value", job.Transaction.Gas).Debug("crafted gas estimation")
 	return nil
 }

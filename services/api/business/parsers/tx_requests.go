@@ -62,7 +62,7 @@ func newEthTransactionFromParams(params *entities.ETHTransactionParams, txData [
 	tx := &entities.ETHTransaction{
 		From:            nil,
 		To:              nil,
-		Nonce:           &params.Nonce,
+		Nonce:           params.Nonce,
 		Value:           params.Value,
 		GasPrice:        params.GasPrice,
 		Gas:             params.Gas,
@@ -117,10 +117,10 @@ func newTransactionFromRaw(raw hexutil.Bytes) (*entities.ETHTransaction, error) 
 	jobTx := &entities.ETHTransaction{
 		From:     &from,
 		Data:     tx.Data(),
-		Gas:      utils.ToPtr(tx.Gas()).(*hexutil.Uint64),
+		Gas:      utils.ToPtr(tx.Gas()).(*uint64),
 		GasPrice: (*hexutil.Big)(tx.GasPrice()),
 		Value:    (*hexutil.Big)(tx.Value()),
-		Nonce:    utils.ToPtr(tx.Gas()).(*hexutil.Uint64),
+		Nonce:    utils.ToPtr(tx.Gas()).(*uint64),
 		Hash:     utils.ToPtr(tx.Hash()).(*ethcommon.Hash),
 		Raw:      raw,
 	}

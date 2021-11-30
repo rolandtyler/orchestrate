@@ -2,14 +2,15 @@ package envelope
 
 import (
 	"context"
-	"math/big"
 
 	authutils "github.com/consensys/orchestrate/pkg/toolkit/app/auth/utils"
 	"github.com/consensys/orchestrate/pkg/toolkit/app/multitenancy"
 	"github.com/consensys/orchestrate/pkg/types/entities"
 	"github.com/consensys/orchestrate/pkg/types/ethereum"
 	"github.com/consensys/orchestrate/pkg/types/tx"
+	"github.com/consensys/orchestrate/pkg/utils"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -28,20 +29,20 @@ func NewEnvelopeFromJob(job *entities.Job, headers map[string]string) *tx.TxEnve
 			Id:      job.ScheduleUUID,
 			Headers: headers,
 			Params: &tx.Params{
-				From:            job.Transaction.From,
-				To:              job.Transaction.To,
-				Gas:             job.Transaction.Gas,
-				GasPrice:        job.Transaction.GasPrice,
-				GasFeeCap:       job.Transaction.GasFeeCap,
-				GasTipCap:       job.Transaction.GasTipCap,
-				Value:           job.Transaction.Value,
-				Nonce:           job.Transaction.Nonce,
-				Data:            job.Transaction.Data,
-				Raw:             job.Transaction.Raw,
-				PrivateFrom:     job.Transaction.PrivateFrom,
-				PrivateFor:      job.Transaction.PrivateFor,
-				MandatoryFor:    job.Transaction.MandatoryFor,
-				PrivacyGroupId:  job.Transaction.PrivacyGroupID,
+				From:            utils.HexToString(job.Transaction.From),
+				To:              utils.HexToString(job.Transaction.To),
+				Gas:             utils.IntegerToString(job.Transaction.Gas),
+				GasPrice:        utils.HexToString(job.Transaction.GasPrice),
+				GasFeeCap:       utils.HexToString(job.Transaction.GasFeeCap),
+				GasTipCap:       utils.HexToString(job.Transaction.GasTipCap),
+				Value:           utils.HexToString(job.Transaction.Value),
+				Nonce:           utils.IntegerToString(job.Transaction.Nonce),
+				Data:            utils.HexToString(job.Transaction.Data),
+				Raw:             utils.HexToString(job.Transaction.Raw),
+				PrivateFrom:     utils.BytesToString(job.Transaction.PrivateFrom),
+				PrivateFor:      utils.ArrBytesToString(job.Transaction.PrivateFor),
+				MandatoryFor:    utils.ArrBytesToString(job.Transaction.MandatoryFor),
+				PrivacyGroupId:  utils.BytesToString(job.Transaction.PrivacyGroupID),
 				PrivacyFlag:     int32(job.Transaction.PrivacyFlag),
 				TransactionType: string(job.Transaction.TransactionType),
 				AccessList:      ConvertFromAccessList(job.Transaction.AccessList),
@@ -54,9 +55,7 @@ func NewEnvelopeFromJob(job *entities.Job, headers map[string]string) *tx.TxEnve
 
 	txEnvelope.SetChainUUID(job.ChainUUID)
 
-	chainID := new(big.Int)
-	chainID.SetString(job.InternalData.ChainID, 10)
-	txEnvelope.SetChainID(chainID)
+	txEnvelope.SetChainID(job.InternalData.ChainID)
 	txEnvelope.SetScheduleUUID(job.ScheduleUUID)
 	txEnvelope.SetJobUUID(job.UUID)
 
@@ -72,8 +71,8 @@ func NewEnvelopeFromJob(job *entities.Job, headers map[string]string) *tx.TxEnve
 		txEnvelope.SetPriority(job.InternalData.Priority)
 	}
 
-	if job.Transaction.Hash != "" {
-		txEnvelope.SetTxHash(job.Transaction.Hash)
+	if job.Transaction.Hash != nil {
+		txEnvelope.SetTxHash(job.Transaction.Hash.String())
 	}
 
 	return txEnvelope
@@ -95,30 +94,30 @@ func NewJobFromEnvelope(envelope *tx.Envelope) *entities.Job {
 		Type:         entities.JobType(envelope.GetJobTypeString()),
 		InternalData: &entities.InternalData{
 			OneTimeKey:    envelope.IsOneTimeKeySignature(),
-			ChainID:       envelope.GetChainIDString(),
+			ChainID:       envelope.GetChainID(),
 			ParentJobUUID: envelope.GetParentJobUUID(),
 			Priority:      envelope.GetPriority(),
 		},
 		TenantID: envelope.GetHeadersValue(authutils.TenantIDHeader),
 		OwnerID:  envelope.GetHeadersValue(authutils.UsernameHeader),
 		Transaction: &entities.ETHTransaction{
-			Hash:            envelope.GetTxHashString(),
-			From:            envelope.GetFromString(),
-			To:              envelope.GetToString(),
-			Nonce:           envelope.GetNonceString(),
-			Value:           envelope.GetValueString(),
-			GasPrice:        envelope.GetGasPriceString(),
-			Gas:             envelope.GetGasString(),
-			GasFeeCap:       envelope.GetGasFeeCapString(),
-			GasTipCap:       envelope.GetGasTipCapString(),
+			Hash:            envelope.GetTxHash(),
+			From:            envelope.GetFrom(),
+			To:              envelope.GetTo(),
+			Nonce:           envelope.GetNonce(),
+			Value:           (*hexutil.Big)(envelope.GetValue()),
+			GasPrice:        (*hexutil.Big)(envelope.GetGasPrice()),
+			Gas:             envelope.GetGas(),
+			GasFeeCap:       (*hexutil.Big)(envelope.GetGasFeeCap()),
+			GasTipCap:       (*hexutil.Big)(envelope.GetGasTipCap()),
 			AccessList:      ConvertToAccessList(envelope.GetAccessList()),
 			TransactionType: entities.TransactionType(envelope.GetTransactionType()),
 			Data:            envelope.GetData(),
 			Raw:             envelope.GetRaw(),
-			PrivateFrom:     envelope.GetPrivateFrom(),
-			PrivateFor:      envelope.GetPrivateFor(),
-			MandatoryFor:    envelope.GetMandatoryFor(),
-			PrivacyGroupID:  envelope.GetPrivacyGroupID(),
+			PrivateFrom:     []byte(envelope.GetPrivateFrom()),
+			PrivateFor:      utils.ArrStringToBytes(envelope.GetPrivateFor()),
+			MandatoryFor:    utils.ArrStringToBytes(envelope.GetMandatoryFor()),
+			PrivacyGroupID:  []byte(envelope.GetPrivacyGroupID()),
 			PrivacyFlag:     envelope.GetPrivacyFlag(),
 			EnclaveKey:      envelope.GetEnclaveKey(),
 		},

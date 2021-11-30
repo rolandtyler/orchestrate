@@ -42,7 +42,7 @@ func NewSignEEATransactionUseCase(keyManagerClient client.KeyManagerClient) usec
 	}
 }
 
-func (uc *signEEATransactionUseCase) Execute(ctx context.Context, job *entities.Job) (signedRaw hexutil.Bytes, txHash ethcommon.Hash, err error) {
+func (uc *signEEATransactionUseCase) Execute(ctx context.Context, job *entities.Job) (signedRaw hexutil.Bytes, txHash *ethcommon.Hash, err error) {
 	logger := uc.logger.WithContext(ctx).WithField("one_time_key", job.InternalData.OneTimeKey)
 
 	transaction := parsers.ETHTransactionToTransaction(job.Transaction, job.InternalData.ChainID)
@@ -59,13 +59,13 @@ func (uc *signEEATransactionUseCase) Execute(ctx context.Context, job *entities.
 		signedRaw, err = uc.signWithAccount(ctx, job, privateArgs, transaction, job.InternalData.ChainID)
 	}
 	if err != nil {
-		return nil, ethcommon.Hash{}, errors.FromError(err).ExtendComponent(signEEATransactionComponent)
+		return nil, nil, errors.FromError(err).ExtendComponent(signEEATransactionComponent)
 	}
 
 	logger.Debug("eea transaction signed successfully")
 
 	// transaction hash of EEA transactions cannot be computed
-	return signedRaw, ethcommon.Hash{}, nil
+	return signedRaw, nil, nil
 }
 
 func (uc *signEEATransactionUseCase) signWithOneTimeKey(ctx context.Context, transaction *types.Transaction,

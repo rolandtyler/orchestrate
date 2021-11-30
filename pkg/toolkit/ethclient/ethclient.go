@@ -10,6 +10,7 @@ import (
 	proto "github.com/consensys/orchestrate/pkg/types/ethereum"
 	eth "github.com/ethereum/go-ethereum"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -21,28 +22,28 @@ type TransactionSender interface {
 	SendTransaction(ctx context.Context, url string, args *types.SendTxArgs) (ethcommon.Hash, error)
 
 	// SendRawTransaction allows to send a raw transaction
-	SendRawTransaction(ctx context.Context, url string, raw string) (ethcommon.Hash, error)
+	SendRawTransaction(ctx context.Context, url string, raw hexutil.Bytes) (ethcommon.Hash, error)
 
 	// SendRawPrivateTransaction send a raw transaction to a Ethereum node supporting privacy with EEA privacy extensions
-	SendRawPrivateTransaction(ctx context.Context, url string, raw string) (ethcommon.Hash, error)
+	SendRawPrivateTransaction(ctx context.Context, url string, raw hexutil.Bytes) (ethcommon.Hash, error)
 }
 
 type EEATransactionSender interface {
 	// PrivDistributeRawTransaction Returns the enclaveKey of sent private transaction
-	PrivDistributeRawTransaction(ctx context.Context, endpoint, raw string) (ethcommon.Hash, error)
+	PrivDistributeRawTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes) (ethcommon.Hash, error)
 	// Creates a group of nodes, specified by their EEA public key.
-	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) (string, error)
+	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses [][]byte) ([]byte, error)
 }
 
 type QuorumTransactionSender interface {
 	// SendQuorumRawPrivateTransaction sends a raw signed transaction to a Quorum node
 	// signedTxHash - is a hash returned by Quorum and then signed by a client
 	// privateFor - is a list of public keys of Quorum nodes that can receive a private transaction
-	SendQuorumRawPrivateTransaction(ctx context.Context, url string, signedTxHash string, privateFor []string, mandatoryFor []string, privacyFlag int) (ethcommon.Hash, error)
+	SendQuorumRawPrivateTransaction(ctx context.Context, url string, raw hexutil.Bytes, privateFor, mandatoryFor [][]byte, privacyFlag int) (ethcommon.Hash, error)
 
 	// StoreRaw stores "data" field of a transaction in Tessera privacy enclave
 	// It returns a hash of a stored transaction that should be used instead of transaction data
-	StoreRaw(ctx context.Context, endpoint string, data []byte, privateFrom string) (string, error)
+	StoreRaw(ctx context.Context, endpoint string, data hexutil.Bytes, privateFrom []byte) ([]byte, error)
 }
 
 // ChainLedgerReader is a service to access a blockchain ledger information
@@ -73,7 +74,7 @@ type EEAChainLedgerReader interface {
 
 	// PrivCodeAt returns contract code of the given account.
 	// The block number can be nil, in which case the code is taken from the latest known block.
-	PrivCodeAt(ctx context.Context, url string, account ethcommon.Address, privateGroupID string, blockNumber *big.Int) ([]byte, error)
+	PrivCodeAt(ctx context.Context, url string, account ethcommon.Address, privateGroupID []byte, blockNumber *big.Int) ([]byte, error)
 }
 
 // ChainStateReader is a service to access a blockchain state information
@@ -109,12 +110,12 @@ type ChainStateReader interface {
 
 type EEAChainStateReader interface {
 	// PrivEEANonce Returns the private transaction count for specified account and privacy group
-	PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom string, privateFor []string) (uint64, error)
+	PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom []byte, privateFor [][]byte) (uint64, error)
 
 	// PrivNonce Returns the private transaction count for specified account and privacy group
-	PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID string) (uint64, error)
+	PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID []byte) (uint64, error)
 
-	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([]string, error)
+	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members [][]byte) ([][]byte, error)
 
 	// EEAPrivPrecompiledContractAddr Returns the private precompiled contract address of Besu/EEA
 	EEAPrivPrecompiledContractAddr(ctx context.Context, endpoint string) (ethcommon.Address, error)

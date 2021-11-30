@@ -74,17 +74,17 @@ func (hk *Hook) AfterNewBlock(ctx context.Context, c *dynamic.Chain, block *etht
 			JobUUID:       job.UUID,
 			ContextLabels: job.Labels,
 			Transaction: &types.Transaction{
-				From:       job.Transaction.From,
-				Nonce:      job.Transaction.Nonce,
-				To:         job.Transaction.To,
-				Value:      job.Transaction.Value,
-				Gas:        job.Transaction.Gas,
-				GasPrice:   job.Transaction.GasPrice,
-				GasFeeCap:  job.Transaction.GasFeeCap,
-				GasTipCap:  job.Transaction.GasTipCap,
-				Data:       job.Transaction.Data,
-				Raw:        job.Transaction.Raw,
-				TxHash:     job.Transaction.Hash,
+				From:       utils.HexToString(job.Transaction.From),
+				Nonce:      utils.IntegerToString(job.Transaction.Nonce),
+				To:         utils.HexToString(job.Transaction.To),
+				Value:      utils.HexToString(job.Transaction.Value),
+				Gas:        utils.IntegerToString(job.Transaction.Gas),
+				GasPrice:   utils.HexToString(job.Transaction.GasPrice),
+				GasFeeCap:  utils.HexToString(job.Transaction.GasFeeCap),
+				GasTipCap:  utils.HexToString(job.Transaction.GasTipCap),
+				Data:       utils.HexToString(job.Transaction.Data),
+				Raw:        utils.HexToString(job.Transaction.Raw),
+				TxHash:     utils.HexToString(job.Transaction.Hash),
 				AccessList: envelope.ConvertFromAccessList(job.Transaction.AccessList),
 				TxType:     string(job.Transaction.TransactionType),
 			},
@@ -117,7 +117,7 @@ func (hk *Hook) AfterNewBlock(ctx context.Context, c *dynamic.Chain, block *etht
 		if txResponse.Receipt.EffectiveGasPrice != "" {
 			effectiveGas, _ := hexutil.DecodeBig(txResponse.Receipt.EffectiveGasPrice)
 			updateReq.Transaction = &entities.ETHTransaction{
-				GasPrice: effectiveGas.String(),
+				GasPrice: (*hexutil.Big)(effectiveGas),
 			}
 		}
 
@@ -169,7 +169,7 @@ func (hk *Hook) decodeReceipt(ctx context.Context, c *dynamic.Chain, receipt *ty
 			l.GetAddress(),
 			c.ChainID,
 			&api.GetContractEventsRequest{
-				SigHash:           l.Topics[0],
+				SigHash:           hexutil.MustDecode(l.Topics[0]),
 				IndexedInputCount: uint32(len(l.Topics) - 1),
 			},
 		)
@@ -253,7 +253,7 @@ func (hk *Hook) registerDeployedContract(ctx context.Context, c *dynamic.Chain, 
 	var err error
 	if receipt.PrivacyGroupId != "" {
 		// Fetch EEA deployed contract code
-		code, err = hk.ec.PrivCodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), receipt.PrivacyGroupId, block.Number())
+		code, err = hk.ec.PrivCodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), []byte(receipt.PrivacyGroupId), block.Number())
 	} else {
 		code, err = hk.ec.CodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), block.Number())
 	}
@@ -264,7 +264,7 @@ func (hk *Hook) registerDeployedContract(ctx context.Context, c *dynamic.Chain, 
 
 	err = hk.client.SetContractAddressCodeHash(ctx, receipt.ContractAddress, c.ChainID,
 		&api.SetContractCodeHashRequest{
-			CodeHash: crypto.Keccak256Hash(code).String(),
+			CodeHash: crypto.Keccak256Hash(code).Bytes(),
 		})
 	if err != nil {
 		logger.WithError(err).Error("failed to register contract")
