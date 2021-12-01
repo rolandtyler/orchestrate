@@ -3,12 +3,14 @@
 ## v21.10.0 alpha.4 (WIP)
 ### ⚠ BREAKING CHANGES
 * `Orion` was removed in favor of `EEA` as *PrivateTxManager* in chain APIs
-* Following ETH transaction properties types has been updated:
-    - `value` expects an HEX value prefix by "0x".
-    - `gasPrice` expects an HEX value prefix by "0x".
+* Following ETH transaction properties types has been BigInt updated:
+    - `value` expects an HEX value prefix by "0x" instead of BigInt string.
+    - `gasPrice` expects an HEX value prefix by "0x" instead of BigInt string.
+    - `nonce` expects an uint64 instead of Integer string.
+    - `gas` expects an uint64.
 * Following Faucet request params has been modified:
-    - `amount` expects an HEX value prefix by "0x".
-    - `maxBalance` expects an HEX value prefix by "0x".
+    - `amount` expects an HEX value prefix by "0x" instead of BigInt string.
+    - `maxBalance` expects an HEX value prefix by "0x" instead of BigInt string.
 
 ## v21.10.0 alpha.3 (2021-11-24)
 ### 🆕 Features

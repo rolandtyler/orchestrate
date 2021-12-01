@@ -69,8 +69,8 @@ Feature: Send transactions using tx-sentry
           "from": "{{account1}}",
           "to": "{{random.account}}",
           "data": "0x",
-          "gas": "21000",
-          "nonce": "1"
+          "gas": 21000,
+          "nonce": 1
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",
@@ -102,8 +102,8 @@ Feature: Send transactions using tx-sentry
           "from": "{{account1}}",
           "to": "{{random.account}}",
           "data": "0x",
-          "gas": "21000",
-          "nonce": "0"
+          "gas": 21000,
+          "nonce": 0
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",
@@ -155,8 +155,8 @@ Feature: Send transactions using tx-sentry
           "from": "{{account1}}",
           "to": "{{random.account}}",
           "data": "0x",
-          "gas": "21000",
-          "nonce": "1"
+          "gas": 21000,
+          "nonce": 1
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",
@@ -196,7 +196,7 @@ Feature: Send transactions using tx-sentry
           "to": "{{random.account}}",
           "data": "0x",
           "gas": "21000",
-          "nonce": "0"
+          "nonce": 0
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",
@@ -247,7 +247,7 @@ Feature: Send transactions using tx-sentry
           "to": "{{random.account}}",
           "data": "0x",
           "gas": "21000",
-          "nonce": "1"
+          "nonce": 1
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",

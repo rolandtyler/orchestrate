@@ -35,6 +35,8 @@ func toValue(structType reflect.Type, strValue string) (reflect.Value, error) {
 		v = reflect.ValueOf(common.HexToHash(strValue))
 	case reflect.TypeOf(hexutil.Big{}):
 		v = reflect.ValueOf((*hexutil.Big)(hexutil.MustDecodeBig(strValue)))
+	case reflect.TypeOf(hexutil.Bytes{}):
+		v = reflect.ValueOf(hexutil.MustDecode(strValue))
 	case reflect.TypeOf(big.Int{}):
 		b, ok := new(big.Int).SetString(strValue, 10)
 		if !ok {

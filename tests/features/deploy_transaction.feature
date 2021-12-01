@@ -224,7 +224,7 @@ Feature: Deploy ERC20 contract
         "params": {
           "contractName": "SimpleToken",
           "oneTimeKey": true,
-          "gas": "1"
+          "gas": 1
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",

@@ -50,6 +50,20 @@ const aliasHeaderValue = "alias"
 var aliasRegex = regexp.MustCompile("{{([^}]*)}}")
 var AddressPtrType = reflect.TypeOf(new(common.Address))
 
+// type SimpleEnvelope struct {
+// 	TxHash string
+// 	Raw    string
+// 	From   string
+// }
+// 
+// func newSimpleEnvelope(e tx.Envelope) *SimpleEnvelope {
+// 	return &SimpleEnvelope{
+// 		TxHash: e.GetTxHashString(),
+// 		Raw:    e.GetRawString(),
+// 		From:   e.GetFromString(),
+// 	}
+// }
+
 func (sc *ScenarioContext) sendEnvelope(topic string, e *tx.Envelope) error {
 	// Prepare message to be sent
 	msg := &sarama.ProducerMessage{
@@ -458,13 +472,27 @@ func (sc *ScenarioContext) replace(s string) (string, error) {
 		var str string
 		switch val.Kind() {
 		case reflect.Array, reflect.Slice:
-			strb, _ := json.Marshal(v)
-			str = string(strb)
+			switch reflect.TypeOf(v).String() {
+			case reflect.TypeOf(new(hexutil.Bytes)).String():
+				str = v.(*hexutil.Bytes).String()
+			case reflect.TypeOf(hexutil.Bytes{}).String():
+				str = v.(hexutil.Bytes).String()
+			default:
+				strb, _ := json.Marshal(v)
+				str = string(strb)
+			}
 		default:
-			str = fmt.Sprintf("%v", v)
+			switch reflect.TypeOf(v).String() {
+			case reflect.TypeOf(new(hexutil.Big)).String():
+				str = v.(*hexutil.Big).String()
+			default:
+				str = fmt.Sprintf("%v", v)
+			}
 		}
+
 		s = strings.Replace(s, matchedAlias[0], str, 1)
 	}
+
 	return s, nil
 }
 
@@ -548,6 +576,7 @@ func (sc *ScenarioContext) iSignTheFollowingTransactions(table *gherkin.PickleSt
 		if err != nil {
 			return err
 		}
+
 		sc.aliases.Set(e, sc.Pickle.Id, helpersTable.Rows[i+1].Cells[0].Value)
 	}
 

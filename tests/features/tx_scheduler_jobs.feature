@@ -109,7 +109,7 @@ Feature: Transaction Scheduler Jobs
       | random_account | {{random.account}} |
     Given I sign the following transactions
       | alias | ID              | Data | Gas   | To                 | Nonce | privateKey             | ChainUUID            | API-KEY            | Tenant               |
-      | rawTx | {{random.uuid}} | 0x0   | 21000 | {{random_account}} | 0     | {{random.private_key}} | {{chain.besu0.UUID}} | {{global.api-key}} | {{tenant1.tenantID}} |
+      | rawTx | {{random.uuid}} | 0x   | 21000 | {{random_account}} | 0     | {{random.private_key}} | {{chain.besu0.UUID}} | {{global.api-key}} | {{tenant1.tenantID}} |
     Then  I set the headers
       | Key         | Value                |
       | X-API-KEY   | {{global.api-key}}   |

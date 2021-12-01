@@ -326,6 +326,7 @@ Feature: Private transactions
       | 271360 | ~       |
 
   @besu
+  @test
   Scenario: Deploy private ERC20 contract with Besu/EEA
     Given I register the following alias
       | alias                  | value           |
@@ -968,7 +969,7 @@ Feature: Private transactions
         "transaction": {
           "from": "{{account1}}",
           "to": "{{to1}}",
-          "nonce": "1000001",
+          "nonce": 1000001,
           "privateFrom": "{{global.nodes.besu[0].privateAddress[0]}}",
           "privateFor": [
             "{{global.nodes.besu[1].privateAddress[0]}}"
