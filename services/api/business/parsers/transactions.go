@@ -9,25 +9,25 @@ import (
 
 func NewTransactionModelFromEntities(tx *entities.ETHTransaction) *models.Transaction {
 	return &models.Transaction{
-		Hash:           utils.StructToString(tx.Hash),
-		Sender:         utils.StructToString(tx.From),
-		Recipient:      utils.StructToString(tx.To),
+		Hash:           utils.ObjToString(tx.Hash),
+		Sender:         utils.ObjToString(tx.From),
+		Recipient:      utils.ObjToString(tx.To),
 		Nonce:          utils.ValueToString(tx.Nonce),
-		Value:          utils.StructToString(tx.Value),
-		GasPrice:       utils.StructToString(tx.GasPrice),
-		GasFeeCap:      utils.StructToString(tx.GasFeeCap),
-		GasTipCap:      utils.StructToString(tx.GasTipCap),
+		Value:          utils.ObjToString(tx.Value),
+		GasPrice:       utils.ObjToString(tx.GasPrice),
+		GasFeeCap:      utils.ObjToString(tx.GasFeeCap),
+		GasTipCap:      utils.ObjToString(tx.GasTipCap),
 		Gas:            utils.ValueToString(tx.Gas),
-		Data:           utils.StructToString(tx.Data),
-		Raw:            utils.StructToString(tx.Raw),
+		Data:           utils.ObjToString(tx.Data),
+		Raw:            utils.ObjToString(tx.Raw),
 		TxType:         string(tx.TransactionType),
 		AccessList:     tx.AccessList,
-		PrivateFrom:    utils.BytesToString(tx.PrivateFrom),
-		PrivateFor:     utils.ArrBytesToString(tx.PrivateFor),
-		MandatoryFor:   utils.ArrBytesToString(tx.MandatoryFor),
-		PrivacyGroupID: utils.BytesToString(tx.PrivacyGroupID),
+		PrivateFrom:    tx.PrivateFrom,
+		PrivateFor:     tx.PrivateFor,
+		MandatoryFor:   tx.MandatoryFor,
+		PrivacyGroupID: tx.PrivacyGroupID,
 		PrivacyFlag:    int(tx.PrivacyFlag),
-		EnclaveKey:     utils.StructToString(tx.EnclaveKey),
+		EnclaveKey:     utils.ObjToString(tx.EnclaveKey),
 		CreatedAt:      tx.CreatedAt,
 		UpdatedAt:      tx.UpdatedAt,
 	}
@@ -50,10 +50,10 @@ func NewTransactionEntityFromModels(tx *models.Transaction) *entities.ETHTransac
 		Data:            utils.StringToHexBytes(tx.Data),
 		TransactionType: entities.TransactionType(tx.TxType),
 		AccessList:      accessList,
-		PrivateFrom:     []byte(tx.PrivateFrom),
-		PrivateFor:      utils.ArrStringToBytes(tx.PrivateFor),
-		MandatoryFor:    utils.ArrStringToBytes(tx.MandatoryFor),
-		PrivacyGroupID:  []byte(tx.PrivacyGroupID),
+		PrivateFrom:     tx.PrivateFrom,
+		PrivateFor:      tx.PrivateFor,
+		MandatoryFor:    tx.MandatoryFor,
+		PrivacyGroupID:  tx.PrivacyGroupID,
 		PrivacyFlag:     entities.PrivacyFlag(tx.PrivacyFlag),
 		EnclaveKey:      utils.StringToHexBytes(tx.EnclaveKey),
 		Raw:             utils.StringToHexBytes(tx.Raw),
@@ -63,22 +63,22 @@ func NewTransactionEntityFromModels(tx *models.Transaction) *entities.ETHTransac
 }
 
 func UpdateTransactionModelFromEntities(txModel *models.Transaction, tx *entities.ETHTransaction) {
-	txModel.Hash = utils.StructToString(tx.Hash)
-	txModel.Sender = utils.StructToString(tx.From)
-	txModel.Recipient = utils.StructToString(tx.To)
+	txModel.Hash = utils.ObjToString(tx.Hash)
+	txModel.Sender = utils.ObjToString(tx.From)
+	txModel.Recipient = utils.ObjToString(tx.To)
 	txModel.Nonce = utils.ValueToString(tx.Nonce)
-	txModel.Value = utils.StructToString(tx.Value)
-	txModel.GasPrice = utils.StructToString(tx.GasPrice)
-	txModel.GasFeeCap = utils.StructToString(tx.GasFeeCap)
-	txModel.GasTipCap = utils.StructToString(tx.GasTipCap)
+	txModel.Value = utils.ObjToString(tx.Value)
+	txModel.GasPrice = utils.ObjToString(tx.GasPrice)
+	txModel.GasFeeCap = utils.ObjToString(tx.GasFeeCap)
+	txModel.GasTipCap = utils.ObjToString(tx.GasTipCap)
 	txModel.Gas = utils.ValueToString(tx.Gas)
-	txModel.Data = utils.StructToString(tx.Data)
-	txModel.Raw = utils.StructToString(tx.Raw)
+	txModel.Data = utils.ObjToString(tx.Data)
+	txModel.Raw = utils.ObjToString(tx.Raw)
 	txModel.TxType = string(tx.TransactionType)
 	txModel.AccessList = tx.AccessList
-	txModel.PrivateFrom = utils.BytesToString(tx.PrivateFrom)
-	txModel.PrivateFor = utils.ArrBytesToString(tx.PrivateFor)
-	txModel.MandatoryFor = utils.ArrBytesToString(tx.MandatoryFor)
-	txModel.PrivacyGroupID = utils.BytesToString(tx.PrivacyGroupID)
-	txModel.EnclaveKey = utils.StructToString(tx.EnclaveKey)
+	txModel.PrivateFrom = tx.PrivateFrom
+	txModel.PrivateFor = tx.PrivateFor
+	txModel.MandatoryFor = tx.MandatoryFor
+	txModel.PrivacyGroupID = tx.PrivacyGroupID
+	txModel.EnclaveKey = utils.ObjToString(tx.EnclaveKey)
 }

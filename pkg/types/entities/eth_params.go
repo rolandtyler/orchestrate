@@ -23,16 +23,16 @@ type ETHTransactionParams struct {
 	ContractTag     string               `json:"contractTag,omitempty" example:"v1.1.0"`
 	Nonce           *uint64              `json:"nonce,omitempty" example:"1"`
 	Protocol        PrivateTxManagerType `json:"protocol,omitempty" example:"Tessera"`
-	PrivateFrom     []byte               `json:"privateFrom,omitempty" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
-	PrivateFor      [][]byte             `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
-	MandatoryFor    [][]byte             `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
-	PrivacyGroupID  []byte               `json:"privacyGroupId,omitempty" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivateFrom     string              `json:"privateFrom,omitempty" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
+	PrivateFor      []string             `json:"privateFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
+	MandatoryFor    []string             `json:"mandatoryFor,omitempty" validate:"omitempty,min=1,unique,dive,base64" example:"[A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=,B1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=]"`
+	PrivacyGroupID  string               `json:"privacyGroupId,omitempty" example:"A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo="`
 	PrivacyFlag     PrivacyFlag          `json:"privacyFlag,omitempty" validate:"omitempty,isPrivacyFlag" example:"0"`
 }
 
 type PrivateETHTransactionParams struct {
-	PrivateFrom    []byte
-	PrivateFor     [][]byte
-	PrivacyGroupID []byte
+	PrivateFrom    string
+	PrivateFor     []string
+	PrivacyGroupID string
 	PrivateTxType  PrivateTxType
 }

@@ -12,7 +12,7 @@ type IStringObj interface {
 	String() string
 }
 
-func StructToString(v IStringObj) string {
+func ObjToString(v IStringObj) string {
 	switch reflect.TypeOf(v).Kind() {
 	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
 		// use of IsNil method

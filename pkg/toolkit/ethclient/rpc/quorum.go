@@ -27,7 +27,7 @@ type StoreRawResponse struct {
 }
 
 func (ec *Client) SendQuorumRawPrivateTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes, privateFor,
-	mandatoryFor [][]byte, privacyFlag int) (ethcommon.Hash, error) {
+	mandatoryFor []string, privacyFlag int) (ethcommon.Hash, error) {
 	privateForParam := map[string]interface{}{
 		"privateFor":  privateFor,
 		"privacyFlag": privacyFlag,
@@ -46,12 +46,12 @@ func (ec *Client) SendQuorumRawPrivateTransaction(ctx context.Context, endpoint 
 	return ethcommon.HexToHash(hash), nil
 }
 
-func (ec *Client) StoreRaw(ctx context.Context, endpoint string, data hexutil.Bytes, privateFrom []byte) ([]byte, error) {
+func (ec *Client) StoreRaw(ctx context.Context, endpoint string, data hexutil.Bytes, privateFrom string) ([]byte, error) {
 	request := map[string]string{
 		"payload": base64.StdEncoding.EncodeToString(data),
 	}
-	if privateFrom != nil {
-		request["from"] = base64.StdEncoding.EncodeToString(privateFrom)
+	if privateFrom != "" {
+		request["from"] = privateFrom
 	}
 
 	storeRawResponse := &StoreRawResponse{}

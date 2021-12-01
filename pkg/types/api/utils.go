@@ -6,20 +6,20 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
-func validatePrivateTxParams(protocol entities.PrivateTxManagerType, privateFrom, privacyGroupID []byte, privateFor [][]byte) error {
+func validatePrivateTxParams(protocol entities.PrivateTxManagerType, privateFrom, privacyGroupID string, privateFor []string) error {
 	if protocol == "" {
 		return errors.InvalidParameterError("field 'protocol' cannot be empty")
 	}
 
-	if protocol != entities.TesseraChainType && privateFrom == nil {
+	if protocol != entities.TesseraChainType && privateFrom == "" {
 		return errors.InvalidParameterError("fields 'privateFrom' cannot be empty")
 	}
 
-	if privacyGroupID == nil && len(privateFor) == 0 {
+	if privacyGroupID == "" && len(privateFor) == 0 {
 		return errors.InvalidParameterError("fields 'privacyGroupId' and 'privateFor' cannot both be empty")
 	}
 
-	if len(privateFor) > 0 && privacyGroupID == nil {
+	if len(privateFor) > 0 && privacyGroupID != "" {
 		return errors.InvalidParameterError("fields 'privacyGroupId' and 'privateFor' are mutually exclusive")
 	}
 

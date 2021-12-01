@@ -74,17 +74,17 @@ func (hk *Hook) AfterNewBlock(ctx context.Context, c *dynamic.Chain, block *etht
 			JobUUID:       job.UUID,
 			ContextLabels: job.Labels,
 			Transaction: &types.Transaction{
-				From:       utils.StructToString(job.Transaction.From),
+				From:       utils.ObjToString(job.Transaction.From),
 				Nonce:      utils.ValueToString(job.Transaction.Nonce),
-				To:         utils.StructToString(job.Transaction.To),
-				Value:      utils.StructToString(job.Transaction.Value),
+				To:         utils.ObjToString(job.Transaction.To),
+				Value:      utils.ObjToString(job.Transaction.Value),
 				Gas:        utils.ValueToString(job.Transaction.Gas),
-				GasPrice:   utils.StructToString(job.Transaction.GasPrice),
-				GasFeeCap:  utils.StructToString(job.Transaction.GasFeeCap),
-				GasTipCap:  utils.StructToString(job.Transaction.GasTipCap),
-				Data:       utils.StructToString(job.Transaction.Data),
-				Raw:        utils.StructToString(job.Transaction.Raw),
-				TxHash:     utils.StructToString(job.Transaction.Hash),
+				GasPrice:   utils.ObjToString(job.Transaction.GasPrice),
+				GasFeeCap:  utils.ObjToString(job.Transaction.GasFeeCap),
+				GasTipCap:  utils.ObjToString(job.Transaction.GasTipCap),
+				Data:       utils.ObjToString(job.Transaction.Data),
+				Raw:        utils.ObjToString(job.Transaction.Raw),
+				TxHash:     utils.ObjToString(job.Transaction.Hash),
 				AccessList: envelope.ConvertFromAccessList(job.Transaction.AccessList),
 				TxType:     string(job.Transaction.TransactionType),
 			},
@@ -253,7 +253,7 @@ func (hk *Hook) registerDeployedContract(ctx context.Context, c *dynamic.Chain, 
 	var err error
 	if receipt.PrivacyGroupId != "" {
 		// Fetch EEA deployed contract code
-		code, err = hk.ec.PrivCodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), []byte(receipt.PrivacyGroupId), block.Number())
+		code, err = hk.ec.PrivCodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), receipt.PrivacyGroupId, block.Number())
 	} else {
 		code, err = hk.ec.CodeAt(ctx, c.URL, ethcommon.HexToAddress(receipt.ContractAddress), block.Number())
 	}

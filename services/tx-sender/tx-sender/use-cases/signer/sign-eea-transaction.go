@@ -106,22 +106,9 @@ func (uc *signEEATransactionUseCase) signWithAccount(ctx context.Context, job *e
 		GasPrice:       hexutil.Big(*tx.GasPrice()),
 		GasLimit:       hexutil.Uint64(tx.Gas()),
 		ChainID:        hexutil.Big(*chainID),
-	}
-	
-	if privateArgs.PrivateFrom != nil {
-		req.PrivateFrom = string(privateArgs.PrivateFrom)
-	}
-	
-	if privateArgs.PrivacyGroupID != nil {
-		req.PrivacyGroupID = string(privateArgs.PrivacyGroupID)
-	}
-	
-	if privateArgs.PrivateFor != nil {
-		for _, privFor := range privateArgs.PrivateFor {
-			if privFor != nil {
-				req.PrivateFor = append(req.PrivateFor, string(privFor))
-			}
-		}
+		PrivateFrom:    privateArgs.PrivateFrom,
+		PrivateFor:     privateArgs.PrivateFor,
+		PrivacyGroupID: privateArgs.PrivacyGroupID,
 	}
 
 	signedRawStr, err := uc.keyManagerClient.SignEEATransaction(ctx, uc.storeName, job.Transaction.From.Hex(), req)

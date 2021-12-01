@@ -32,18 +32,18 @@ type EEATransactionSender interface {
 	// PrivDistributeRawTransaction Returns the enclaveKey of sent private transaction
 	PrivDistributeRawTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes) (ethcommon.Hash, error)
 	// Creates a group of nodes, specified by their EEA public key.
-	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses [][]byte) ([]byte, error)
+	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) ([]byte, error)
 }
 
 type QuorumTransactionSender interface {
 	// SendQuorumRawPrivateTransaction sends a raw signed transaction to a Quorum node
 	// signedTxHash - is a hash returned by Quorum and then signed by a client
 	// privateFor - is a list of public keys of Quorum nodes that can receive a private transaction
-	SendQuorumRawPrivateTransaction(ctx context.Context, url string, raw hexutil.Bytes, privateFor, mandatoryFor [][]byte, privacyFlag int) (ethcommon.Hash, error)
+	SendQuorumRawPrivateTransaction(ctx context.Context, url string, raw hexutil.Bytes, privateFor, mandatoryFor []string, privacyFlag int) (ethcommon.Hash, error)
 
 	// StoreRaw stores "data" field of a transaction in Tessera privacy enclave
 	// It returns a hash of a stored transaction that should be used instead of transaction data
-	StoreRaw(ctx context.Context, endpoint string, data hexutil.Bytes, privateFrom []byte) ([]byte, error)
+	StoreRaw(ctx context.Context, endpoint string, data hexutil.Bytes, privateFrom string) ([]byte, error)
 }
 
 // ChainLedgerReader is a service to access a blockchain ledger information
@@ -74,7 +74,7 @@ type EEAChainLedgerReader interface {
 
 	// PrivCodeAt returns contract code of the given account.
 	// The block number can be nil, in which case the code is taken from the latest known block.
-	PrivCodeAt(ctx context.Context, url string, account ethcommon.Address, privateGroupID []byte, blockNumber *big.Int) ([]byte, error)
+	PrivCodeAt(ctx context.Context, url string, account ethcommon.Address, privateGroupID string, blockNumber *big.Int) ([]byte, error)
 }
 
 // ChainStateReader is a service to access a blockchain state information
@@ -110,12 +110,12 @@ type ChainStateReader interface {
 
 type EEAChainStateReader interface {
 	// PrivEEANonce Returns the private transaction count for specified account and privacy group
-	PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom []byte, privateFor [][]byte) (uint64, error)
+	PrivEEANonce(ctx context.Context, endpoint string, account ethcommon.Address, privateFrom string, privateFor []string) (uint64, error)
 
 	// PrivNonce Returns the private transaction count for specified account and privacy group
-	PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID []byte) (uint64, error)
+	PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID string) (uint64, error)
 
-	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members [][]byte) ([][]byte, error)
+	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([][]byte, error)
 
 	// EEAPrivPrecompiledContractAddr Returns the private precompiled contract address of Besu/EEA
 	EEAPrivPrecompiledContractAddr(ctx context.Context, endpoint string) (ethcommon.Address, error)
