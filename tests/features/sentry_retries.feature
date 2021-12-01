@@ -28,7 +28,7 @@ Feature: Send transactions using tx-sentry
         "params": {
           "from": "{{global.nodes.geth[0].fundedPublicKeys[0]}}",
           "to": "{{account1}}",
-          "value": "100000000000000000"
+          "value": "0x16345785D8A0000"
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",

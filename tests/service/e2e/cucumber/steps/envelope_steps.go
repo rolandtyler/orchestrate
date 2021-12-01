@@ -672,7 +672,7 @@ func (sc *ScenarioContext) craftAndSignEnvelope(ctx context.Context, e *tx.Envel
 			log.WithError(errGasPrice).Error("failed to suggest gas price")
 			return errGasPrice
 		}
-		_ = e.SetGasPrice(gasPrice)
+		_ = e.SetGasPrice((*hexutil.Big)(gasPrice))
 	}
 
 	transaction, err := e.GetTransaction()

@@ -32,7 +32,7 @@ type EEATransactionSender interface {
 	// PrivDistributeRawTransaction Returns the enclaveKey of sent private transaction
 	PrivDistributeRawTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes) (ethcommon.Hash, error)
 	// Creates a group of nodes, specified by their EEA public key.
-	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) ([]byte, error)
+	PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) (string, error)
 }
 
 type QuorumTransactionSender interface {

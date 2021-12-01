@@ -35,7 +35,8 @@ func StringToHexBytes(v string) hexutil.Bytes {
 
 	return nil
 }
-func StringToHexInt(v string) *hexutil.Big {
+
+func BigIntStringToHex(v string) *hexutil.Big {
 	if v == "" {
 		return nil
 	}
@@ -45,6 +46,14 @@ func StringToHexInt(v string) *hexutil.Big {
 	}
 
 	return nil
+}
+
+func HexToBigIntString(v *hexutil.Big) string {
+	if v == nil {
+		return ""
+	}
+
+	return v.ToInt().String()
 }
 
 func StringToUint64(v string) *uint64 {

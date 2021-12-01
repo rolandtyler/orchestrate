@@ -260,15 +260,15 @@ type Tx struct {
 	From            *ethcommon.Address
 	To              *ethcommon.Address
 	Gas             *uint64
-	GasPrice        *big.Int
-	GasFeeCap       *big.Int
-	GasTipCap       *big.Int
+	GasPrice        *hexutil.Big
+	GasFeeCap       *hexutil.Big
+	GasTipCap       *hexutil.Big
 	AccessList      []*ethereum.AccessTuple
 	TransactionType string
-	Value           *big.Int
+	Value           *hexutil.Big
 	Nonce           *uint64
-	Data            hexutil.Bytes  `validate:"omitempty"`
-	Raw             hexutil.Bytes  `validate:"omitempty,required_with_all=TxHash"`
+	Data            hexutil.Bytes   `validate:"omitempty"`
+	Raw             hexutil.Bytes   `validate:"omitempty,required_with_all=TxHash"`
 	TxHash          *ethcommon.Hash `validate:"omitempty,required_with_all=Raw"`
 }
 
@@ -282,7 +282,7 @@ func (e *Envelope) GetTransaction() (*ethtypes.Transaction, error) {
 	}
 	value, err := e.GetValueBig()
 	if value == nil || err != nil {
-		_ = e.SetValue(big.NewInt(0))
+		_ = e.SetValue((*hexutil.Big)(big.NewInt(0)))
 	}
 
 	gas, err := e.GetGasUint64()
@@ -303,9 +303,9 @@ func (e *Envelope) GetTransaction() (*ethtypes.Transaction, error) {
 		// Create contract deployment transaction
 		return ethtypes.NewContractCreation(
 			nonce,
-			value,
+			value.ToInt(),
 			gas,
-			gasPrice,
+			gasPrice.ToInt(),
 			data,
 		), nil
 	}
@@ -319,9 +319,9 @@ func (e *Envelope) GetTransaction() (*ethtypes.Transaction, error) {
 	return ethtypes.NewTransaction(
 		nonce,
 		to,
-		value,
+		value.ToInt(),
 		gas,
-		gasPrice,
+		gasPrice.ToInt(),
 		data,
 	), nil
 }
@@ -496,11 +496,11 @@ func (e *Envelope) SetNonce(nonce uint64) *Envelope {
 
 // GASPRICE
 
-func (e *Envelope) GetGasPrice() *big.Int {
+func (e *Envelope) GetGasPrice() *hexutil.Big {
 	return e.GasPrice
 }
 
-func (e *Envelope) GetGasPriceBig() (*big.Int, error) {
+func (e *Envelope) GetGasPriceBig() (*hexutil.Big, error) {
 	if e.GasPrice == nil {
 		return nil, errors.DataError("no gasPrice is filled")
 	}
@@ -516,16 +516,17 @@ func (e *Envelope) GetGasPriceString() string {
 
 func (e *Envelope) SetGasPriceString(gasPrice string) error {
 	if gasPrice != "" {
-		g, ok := new(big.Int).SetString(gasPrice, 10)
-		if !ok {
+		v, err := hexutil.DecodeBig(gasPrice)
+		if err != nil {
 			return errors.DataError("invalid gasPrice - got %s", gasPrice)
 		}
-		_ = e.SetGasPrice(g)
+		_ = e.SetGasPrice((*hexutil.Big)(v))
 	}
+
 	return nil
 }
 
-func (e *Envelope) SetGasPrice(gasPrice *big.Int) *Envelope {
+func (e *Envelope) SetGasPrice(gasPrice *hexutil.Big) *Envelope {
 	e.GasPrice = gasPrice
 	return e
 }
@@ -533,16 +534,16 @@ func (e *Envelope) SetGasPrice(gasPrice *big.Int) *Envelope {
 // GasFeeCap
 func (e *Envelope) SetGasFeeCapString(gasFeeCap string) error {
 	if gasFeeCap != "" {
-		g, ok := new(big.Int).SetString(gasFeeCap, 10)
-		if !ok {
+		v, err := hexutil.DecodeBig(gasFeeCap)
+		if err != nil {
 			return errors.DataError("invalid gasFeeCap - got %s", gasFeeCap)
 		}
-		_ = e.SetFeeCap(g)
+		_ = e.SetFeeCap((*hexutil.Big)(v))
 	}
 	return nil
 }
 
-func (e *Envelope) SetFeeCap(gasFeeCap *big.Int) *Envelope {
+func (e *Envelope) SetFeeCap(gasFeeCap *hexutil.Big) *Envelope {
 	e.GasFeeCap = gasFeeCap
 	return e
 }
@@ -554,28 +555,29 @@ func (e *Envelope) GetGasFeeCapString() string {
 	return e.GasFeeCap.String()
 }
 
-func (e *Envelope) GetGasFeeCap() *big.Int {
+func (e *Envelope) GetGasFeeCap() *hexutil.Big {
 	return e.GasFeeCap
 }
 
 // GasTipCap
 func (e *Envelope) SetGasTipCapString(gasTipCap string) error {
+
 	if gasTipCap != "" {
-		g, ok := new(big.Int).SetString(gasTipCap, 10)
-		if !ok {
+		v, err := hexutil.DecodeBig(gasTipCap)
+		if err != nil {
 			return errors.DataError("invalid gasTipCap - got %s", gasTipCap)
 		}
-		_ = e.SetTipCap(g)
+		_ = e.SetTipCap((*hexutil.Big)(v))
 	}
 	return nil
 }
 
-func (e *Envelope) SetTipCap(gasTipCap *big.Int) *Envelope {
+func (e *Envelope) SetTipCap(gasTipCap *hexutil.Big) *Envelope {
 	e.GasTipCap = gasTipCap
 	return e
 }
 
-func (e *Envelope) GetGasTipCap() *big.Int {
+func (e *Envelope) GetGasTipCap() *hexutil.Big {
 	return e.GasTipCap
 }
 
@@ -611,10 +613,10 @@ func (e *Envelope) GetTransactionType() string {
 
 // VALUE
 
-func (e *Envelope) GetValue() *big.Int {
+func (e *Envelope) GetValue() *hexutil.Big {
 	return e.Value
 }
-func (e *Envelope) GetValueBig() (*big.Int, error) {
+func (e *Envelope) GetValueBig() (*hexutil.Big, error) {
 	if e.Value == nil {
 		return nil, errors.DataError("no value is filled")
 	}
@@ -630,16 +632,16 @@ func (e *Envelope) GetValueString() string {
 
 func (e *Envelope) SetValueString(value string) error {
 	if value != "" {
-		v, ok := new(big.Int).SetString(value, 10)
-		if !ok {
+		v, err := hexutil.DecodeBig(value)
+		if err != nil {
 			return errors.DataError("invalid value - got %s", value)
 		}
-		_ = e.SetValue(v)
+		_ = e.SetValue((*hexutil.Big)(v))
 	}
 	return nil
 }
 
-func (e *Envelope) SetValue(value *big.Int) *Envelope {
+func (e *Envelope) SetValue(value *hexutil.Big) *Envelope {
 	e.Value = value
 	return e
 }

@@ -15,7 +15,7 @@ func NewChainFromModel(chainModel *models.Chain) *entities.Chain {
 		TenantID:                  chainModel.TenantID,
 		OwnerID:                   chainModel.OwnerID,
 		URLs:                      chainModel.URLs,
-		ChainID:                   (*big.Int)(utils.StringToHexInt(chainModel.ChainID)),
+		ChainID:                   (*big.Int)(utils.BigIntStringToHex(chainModel.ChainID)),
 		ListenerDepth:             chainModel.ListenerDepth,
 		ListenerCurrentBlock:      chainModel.ListenerCurrentBlock,
 		ListenerStartingBlock:     chainModel.ListenerStartingBlock,

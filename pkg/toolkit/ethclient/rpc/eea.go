@@ -36,12 +36,12 @@ func (ec *Client) PrivDistributeRawTransaction(ctx context.Context, endpoint str
 	return txHash, nil
 }
 
-func (ec *Client) PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) ([]byte, error) {
-	var privGroupID []byte
+func (ec *Client) PrivCreatePrivacyGroup(ctx context.Context, endpoint string, addresses []string) (string, error) {
+	var privGroupID string
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&privGroupID), "priv_createPrivacyGroup",
 		map[string][]string{"addresses": addresses})
 	if err != nil {
-		return nil, errors.FromError(err).ExtendComponent(component)
+		return "", errors.FromError(err).ExtendComponent(component)
 	}
 	return privGroupID, nil
 }

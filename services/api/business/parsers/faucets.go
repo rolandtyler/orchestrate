@@ -2,9 +2,9 @@ package parsers
 
 import (
 	"github.com/consensys/orchestrate/pkg/types/entities"
+	"github.com/consensys/orchestrate/pkg/utils"
 	"github.com/consensys/orchestrate/services/api/store/models"
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func NewFaucetFromModel(faucet *models.Faucet) *entities.Faucet {
@@ -14,8 +14,8 @@ func NewFaucetFromModel(faucet *models.Faucet) *entities.Faucet {
 		TenantID:        faucet.TenantID,
 		ChainRule:       faucet.ChainRule,
 		CreditorAccount: ethcommon.HexToAddress(faucet.CreditorAccount),
-		MaxBalance:      hexutil.Big(*hexutil.MustDecodeBig(faucet.MaxBalance)),
-		Amount:          hexutil.Big(*hexutil.MustDecodeBig(faucet.Amount)),
+		MaxBalance:      *utils.BigIntStringToHex(faucet.MaxBalance),
+		Amount:          *utils.BigIntStringToHex(faucet.Amount),
 		Cooldown:        faucet.Cooldown,
 		CreatedAt:       faucet.CreatedAt,
 		UpdatedAt:       faucet.UpdatedAt,
@@ -29,8 +29,8 @@ func NewFaucetModelFromEntity(faucet *entities.Faucet) *models.Faucet {
 		TenantID:        faucet.TenantID,
 		ChainRule:       faucet.ChainRule,
 		CreditorAccount: faucet.CreditorAccount.Hex(),
-		MaxBalance:      faucet.MaxBalance.String(),
-		Amount:          faucet.Amount.String(),
+		MaxBalance:      faucet.MaxBalance.ToInt().String(),
+		Amount:          faucet.Amount.ToInt().String(),
 		Cooldown:        faucet.Cooldown,
 		CreatedAt:       faucet.CreatedAt,
 	}
