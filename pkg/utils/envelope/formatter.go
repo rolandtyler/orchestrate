@@ -10,7 +10,6 @@ import (
 	"github.com/consensys/orchestrate/pkg/types/tx"
 	"github.com/consensys/orchestrate/pkg/utils"
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -105,11 +104,11 @@ func NewJobFromEnvelope(envelope *tx.Envelope) *entities.Job {
 			From:            envelope.GetFrom(),
 			To:              envelope.GetTo(),
 			Nonce:           envelope.GetNonce(),
-			Value:           (*hexutil.Big)(envelope.GetValue()),
-			GasPrice:        (*hexutil.Big)(envelope.GetGasPrice()),
+			Value:           envelope.GetValue(),
+			GasPrice:        envelope.GetGasPrice(),
 			Gas:             envelope.GetGas(),
-			GasFeeCap:       (*hexutil.Big)(envelope.GetGasFeeCap()),
-			GasTipCap:       (*hexutil.Big)(envelope.GetGasTipCap()),
+			GasFeeCap:       envelope.GetGasFeeCap(),
+			GasTipCap:       envelope.GetGasTipCap(),
 			AccessList:      ConvertToAccessList(envelope.GetAccessList()),
 			TransactionType: entities.TransactionType(envelope.GetTransactionType()),
 			Data:            envelope.GetData(),
@@ -119,7 +118,7 @@ func NewJobFromEnvelope(envelope *tx.Envelope) *entities.Job {
 			MandatoryFor:    envelope.GetMandatoryFor(),
 			PrivacyGroupID:  envelope.GetPrivacyGroupID(),
 			PrivacyFlag:     envelope.GetPrivacyFlag(),
-			EnclaveKey:      envelope.GetEnclaveKey(),
+			EnclaveKey:      utils.StringToHexBytes(envelope.GetEnclaveKey()),
 		},
 	}
 }

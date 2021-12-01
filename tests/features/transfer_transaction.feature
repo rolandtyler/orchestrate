@@ -76,7 +76,7 @@ Feature: Send transfer transaction
         "params": {
           "from": "{{account1}}",
           "to": "{{to1}}",
-          "value": "0x1DCD6500"
+          "value": "0x1dcd6500"
         },
         "labels": {
           "scenario.id": "{{scenarioID}}",
@@ -159,7 +159,7 @@ Feature: Send transfer transaction
     Then the response code should be 200
     And Response should have the following fields
       | result     |
-      | 0x17d78400 |
+      | 0x400000000 |
 
   Scenario: Fail to send transfer transaction with missing value
     Given I register the following alias

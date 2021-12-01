@@ -326,7 +326,6 @@ Feature: Private transactions
       | 271360 | ~       |
 
   @besu
-  @test
   Scenario: Deploy private ERC20 contract with Besu/EEA
     Given I register the following alias
       | alias                  | value           |

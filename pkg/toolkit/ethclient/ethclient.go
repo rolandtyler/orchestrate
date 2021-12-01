@@ -115,7 +115,7 @@ type EEAChainStateReader interface {
 	// PrivNonce Returns the private transaction count for specified account and privacy group
 	PrivNonce(ctx context.Context, endpoint string, account ethcommon.Address, privacyGroupID string) (uint64, error)
 
-	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([][]byte, error)
+	PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([]string, error)
 
 	// EEAPrivPrecompiledContractAddr Returns the private precompiled contract address of Besu/EEA
 	EEAPrivPrecompiledContractAddr(ctx context.Context, endpoint string) (ethcommon.Address, error)

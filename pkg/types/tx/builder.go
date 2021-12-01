@@ -940,13 +940,8 @@ func (e *Envelope) GetPrivacyGroupID() string {
 	return e.PrivacyGroupID
 }
 
-func (e *Envelope) GetEnclaveKey() hexutil.Bytes {
-	return utils.StringToHexBytes(e.InternalLabels[EnclaveKeyLabel])
-}
-
-func (e *Envelope) SetEnclaveKey(enclaveKey string) *Envelope {
-	e.InternalLabels[EnclaveKeyLabel] = enclaveKey
-	return e
+func (e *Envelope) GetEnclaveKey() string {
+	return e.InternalLabels[EnclaveKeyLabel]
 }
 
 func (e *Envelope) GetPriority() string {

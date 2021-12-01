@@ -29,7 +29,7 @@ type privateReceipt struct {
 // Distributes a signed, RLP encoded private transaction.
 // https://besu.hyperledger.org/en/stable/Reference/API-Methods/#priv_distributerawtransaction
 func (ec *Client) PrivDistributeRawTransaction(ctx context.Context, endpoint string, raw hexutil.Bytes) (txHash ethcommon.Hash, err error) {
-	err = ec.Call(ctx, endpoint, utils.ProcessResult(&txHash), "priv_distributeRawTransaction", raw)
+	err = ec.Call(ctx, endpoint, utils.ProcessResult(&txHash), "priv_distributeRawTransaction", raw.String())
 	if err != nil {
 		return ethcommon.Hash{}, errors.FromError(err).ExtendComponent(component)
 	}
@@ -67,8 +67,8 @@ func (ec *Client) PrivNonce(ctx context.Context, endpoint string, account ethcom
 }
 
 // Returns a list of privacy groups containing only the listed members. For example, if the listed members are A and B, a privacy group containing A, B, and C is not returned.
-func (ec *Client) PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([][]byte, error) {
-	var groupIDs [][]byte
+func (ec *Client) PrivFindPrivacyGroup(ctx context.Context, endpoint string, members []string) ([]string, error) {
+	var groupIDs []string
 	err := ec.Call(ctx, endpoint, utils.ProcessResult(&members), "priv_findPrivacyGroup", members)
 	if err != nil {
 		return nil, errors.FromError(err).ExtendComponent(component)

@@ -195,7 +195,7 @@ Feature: Send transactions using tx-sentry
           "from": "{{account1}}",
           "to": "{{random.account}}",
           "data": "0x",
-          "gas": "21000",
+          "gas": 21000,
           "nonce": 0
         },
         "labels": {
@@ -246,7 +246,7 @@ Feature: Send transactions using tx-sentry
           "from": "{{account2}}",
           "to": "{{random.account}}",
           "data": "0x",
-          "gas": "21000",
+          "gas": 21000,
           "nonce": 1
         },
         "labels": {
