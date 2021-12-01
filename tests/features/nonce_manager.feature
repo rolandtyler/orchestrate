@@ -257,7 +257,7 @@ Feature: Nonce manager
         "to": "{{to2}}",
         "value": "0x186A0",
         "nonce": 1,
-        "gasPrice": "0x0x3B9ACA00",
+        "gasPrice": "0x3B9ACA00",
         "gas": 21000
     },
     "labels": {
@@ -280,7 +280,7 @@ Feature: Nonce manager
         "to": "{{to3}}",
         "value": "0x186A0",
         "nonce": 0,
-        "gasPrice": "0x0x3B9ACA00",
+        "gasPrice": "0x3B9ACA00",
         "gas": 21000
     },
     "labels": {
